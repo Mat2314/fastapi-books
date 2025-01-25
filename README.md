@@ -19,3 +19,39 @@ The aim of this project is to have a go at the following technologies:
 
 Later on:
 - Kubernetes (Google Kubernetes Engine to try how it works)
+
+
+## Run Dev Environment
+### FastAPI
+It is suggested to run it locally in the VSCode with the debugger. Configure the debugger specifying the following values in `launch.json` file:
+```
+"args": [
+    "api.main:app",
+    "--reload"
+],
+```
+
+
+### Docker containers
+Using `Makefile` run the following command to setup containers for development:
+```
+make dev
+```
+
+Then check data for pgadmin service in docker-compose file and go to `http://localhost:$(SPECIFIED_PORT_IN_DOCKER_COMPOSE)` and use credentials from the file to access the panel.
+
+To connect to the server in pgadmin use the data from docker-compose file.
+Example:
+```
+Host name/address: [docker_service_name]
+Port: 5432 (or other if specified)
+Maintenance database: fabooks (check in docker-compose)
+Password: mypassword (check in docker-compose)
+```
+
+## Running tests
+...
+
+
+## Run in Production
+...

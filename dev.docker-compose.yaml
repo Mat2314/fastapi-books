@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: postgres:17
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_USER: mat
+      POSTGRES_DB: fabooks
+
+
+  pgadmin:
+    # Use root/example as user/password credentials
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 8999:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: mat.redzia@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: supersecretpassword
+
+
