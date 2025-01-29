@@ -8,4 +8,4 @@ async def root():
     a = 5
     a += 8
     
-    return {"message": f"Hello World - {a}"}
+    return {"message": f"Hello World"}
