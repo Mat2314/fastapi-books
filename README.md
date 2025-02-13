@@ -26,7 +26,7 @@ Later on:
 It is suggested to run it locally in the VSCode with the debugger. Configure the debugger specifying the following values in `launch.json` file:
 ```
 "args": [
-    "api.main:app",
+    "main:app",
     "--reload"
 ],
 ```
