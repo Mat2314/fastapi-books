@@ -8,3 +8,5 @@ alembic
 python-dotenv
 sqlmodel
 pydantic-settings
+faker
+typer[all]

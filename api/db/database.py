@@ -1,7 +1,7 @@
 from sqlmodel import create_engine, SQLModel, Session
 
 from core.config import settings
-from db.models import User, Book
+from db.models import *
 
 DATABASE_URL = (
     f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"

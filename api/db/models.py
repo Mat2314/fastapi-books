@@ -9,7 +9,7 @@ class AccountType(str, Enum):
     READER = "reader"
 
 
-class User(SQLModel, table=True):
+class Users(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     first_name: str
     last_name: str
@@ -18,15 +18,15 @@ class User(SQLModel, table=True):
     account_type: AccountType = Field(default=AccountType.READER)
     
     # Relationship to books (for authors)
-    books: List["Book"] = Relationship(back_populates="author")
+    books: List["Books"] = Relationship(back_populates="author")
 
 
-class Book(SQLModel, table=True):
+class Books(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str
     content: str
     # published: bool = Field(default=False)
     
     # Foreign key to author
-    author_id: Optional[UUID] = Field(default=None, foreign_key="user.id")
-    author: Optional[User] = Relationship(back_populates="books")
+    author_id: Optional[UUID] = Field(default=None, foreign_key="users.id")
+    author: Optional[Users] = Relationship(back_populates="books")

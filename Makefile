@@ -16,6 +16,23 @@ migrate:
 revision:
 	cd api/ && alembic revision --autogenerate -m "$(message)"
 
+help-populate:
+	cd api/ && python -m scripts.manage populate --help
+
+populate:
+	cd api/ && python -m scripts.manage populate $(records)
+
+flush_db:
+	cd api/ && python -m scripts.manage clean
+
+# In case no records count is provided, show help
+ifndef records
+populate:
+	@echo "Usage: make populate records=<number_of_records>"
+endif
+
+
+
 # In case no message is provided, show help
 ifndef message
 revision:
