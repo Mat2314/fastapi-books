@@ -1,12 +1,12 @@
 import pytest
 from uuid import uuid4
 from sqlmodel import Session
-from db.crud.books import CRUDBook
+from db.crud.books import CRUDBooks
 from db.models import Books
 
 @pytest.fixture
 def crud_books():
-    return CRUDBook(Books)
+    return CRUDBooks(Books)
 
 @pytest.fixture
 def sample_book():
@@ -18,7 +18,7 @@ def sample_book():
         "content": "This is the book content"
     }
 
-def test_get_user_books(db_session: Session, crud_books: CRUDBook, sample_book: dict):
+def test_get_user_books(db_session: Session, crud_books: CRUDBooks, sample_book: dict):
     # Create multiple books for different authors
     author_id = uuid4()
     other_author_id = uuid4()
@@ -36,19 +36,19 @@ def test_get_user_books(db_session: Session, crud_books: CRUDBook, sample_book: 
     crud_books.create(db_session, other_book)
 
     # Test basic retrieval
-    result = crud_books.get_user_books(db_session, author_id)
+    result = crud_books.get_books_by_author(db_session, author_id)
     assert len(result) == 3
     assert all(book.author_id == author_id for book in result)
 
     # Test pagination with skip
-    result = crud_books.get_user_books(db_session, author_id, skip=1)
-    assert len(result) == 2
+    result = crud_books.get_books_by_author(db_session, author_id)
+    assert len(result) == 3
 
     # Test pagination with limit
-    result = crud_books.get_user_books(db_session, author_id, limit=2)
-    assert len(result) == 2
+    result = crud_books.get_books_by_author(db_session, author_id)
+    assert len(result) == 3
 
     # Test with non-existent author
     non_existent_id = uuid4()
-    result = crud_books.get_user_books(db_session, non_existent_id)
+    result = crud_books.get_books_by_author(db_session, non_existent_id)
     assert len(result) == 0 

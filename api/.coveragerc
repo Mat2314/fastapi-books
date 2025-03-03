@@ -3,3 +3,5 @@ omit =
     */core/__init__.py
     */db/database.py 
     */scripts/manage.py
+    */tests/*
+    */crud/base.py

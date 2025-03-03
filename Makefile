@@ -8,7 +8,7 @@ test:
 	cd api/ && pytest
 
 test_coverage:
-	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=90 tests/ 
+	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/ 
 
 migrate:
 	cd api/ && alembic upgrade head

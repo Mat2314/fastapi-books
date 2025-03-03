@@ -1,7 +1,7 @@
-from .books import CRUDBook
-from .users import CRUDUser
+from .books import CRUDBooks
+from .users import CRUDUsers
 from db.models import Users, Books
 
 # Create instances
-user_crud = CRUDUser(Users)
-book_crud = CRUDBook(Books)
+user_crud = CRUDUsers(Users)
+book_crud = CRUDBooks(Books)

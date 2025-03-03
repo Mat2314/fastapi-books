@@ -4,6 +4,7 @@ from faker import Faker
 from db.database import init_db, engine
 from db.models import Users, Books, AccountType
 from sqlmodel import Session, select, delete
+from core.security import get_password_hash
 
 app = typer.Typer()
 fake = Faker()
@@ -13,15 +14,22 @@ def create_random_user(db: Session) -> Users:
     while True:
         email = fake.email()
         # Check if email already exists
-        existing_user = db.exec(select(Users).where(Users.email == email)).first()
+        existing_user = db.exec(
+            select(Users).where(Users.email == email)
+        ).first()
         if not existing_user:
             break
+
+    # Generate a plain password and hash it
+    plain_password = fake.password()
+    print(f"Email: {email} - Plain password: {plain_password}")
+    hashed_password = get_password_hash(plain_password)
 
     user = Users(
         first_name=fake.first_name(),
         last_name=fake.last_name(),
         email=email,
-        password=fake.password(),
+        password=hashed_password,  # Store the hashed password
         account_type=random.choice([AccountType.AUTHOR, AccountType.READER]),
     )
     db.add(user)
