@@ -1,10 +1,10 @@
 dev:
-	docker-compose -f dev.docker-compose.yaml up -d
+	docker compose -f dev.docker-compose.yaml up -d
 	sleep 2
 	$(MAKE) migrate
 
 stop:
-	docker-compose -f dev.docker-compose.yaml down
+	docker compose -f dev.docker-compose.yaml down
 
 create_test_db:
 	docker exec db psql -U mat -d fabooks -c "CREATE DATABASE test_db;" || true
