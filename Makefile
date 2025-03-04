@@ -5,10 +5,12 @@ stop:
 	docker-compose -f dev.docker-compose.yaml down
 
 test:
-	cd api/ && pytest
+	cd api/ && \
+	pytest
 
 test_coverage:
-	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/ 
+	cd api/ && \
+	pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/ 
 
 migrate:
 	cd api/ && alembic upgrade head
