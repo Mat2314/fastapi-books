@@ -26,7 +26,7 @@ test_coverage:
 	$(MAKE) create_test_db; \
 	$(MAKE) migrate; \
 	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/; \
-	$(MAKE) stop
+	cd .. &&$(MAKE) stop
 
 migrate:
 	cd api/ && alembic upgrade head
