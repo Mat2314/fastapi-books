@@ -53,7 +53,7 @@ def create_random_books(db: Session, author: Users, num_books: int) -> None:
 def populate(num_users: int = typer.Argument(..., help="Number of users to create")):
     """
     Populate database with sample data.
-    Example: python scripts/db.py populate 1000
+    Example: python scripts/manage.py populate 1000
     """
     init_db()
 

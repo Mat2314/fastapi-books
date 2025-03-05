@@ -97,30 +97,30 @@ def reader_headers(reader_token):
     return {"Authorization": f"Bearer {reader_token}"}
 
 
-def test_get_authors(client, auth_headers, test_author):
-    """Test getting all authors"""
-    response = client.get("/api/v1/users/authors", headers=auth_headers)
+def test_get_users(client, auth_headers, test_author):
+    """Test getting all users"""
+    response = client.get("/api/v1/users/all", headers=auth_headers)
     assert response.status_code == 200
     
-    # Check that at least one author is returned
+    # Check that at least one user is returned
     assert len(response.json()) > 0
     
     # Find the test author in the response by ID
-    test_author_in_response = next(
-        (author for author in response.json() 
-         if author["id"] == str(test_author.id)), 
+    test_user_in_response = next(
+        (user for user in response.json() 
+         if user["id"] == str(test_author.id)), 
         None
     )
     
-    # Assert that the test author is in the response and has the correct email
-    assert test_author_in_response is not None
-    assert test_author_in_response["email"] == test_author.email
+    # Assert that the test user is in the response and has the correct email
+    assert test_user_in_response is not None
+    assert test_user_in_response["email"] == test_author.email
 
 
-def test_get_author(client, auth_headers, test_author):
-    """Test getting a specific author"""
+def test_get_user(client, auth_headers, test_author):
+    """Test getting a specific user"""
     response = client.get(
-        f"/api/v1/users/authors/{test_author.id}", 
+        f"/api/v1/users/{test_author.id}", 
         headers=auth_headers
     )
     assert response.status_code == 200
@@ -128,58 +128,65 @@ def test_get_author(client, auth_headers, test_author):
     assert response.json()["account_type"] == AccountType.AUTHOR.value
 
 
-def test_get_nonexistent_author(client, auth_headers):
-    """Test getting an author that doesn't exist"""
+def test_get_nonexistent_user(client, auth_headers):
+    """Test getting a user that doesn't exist"""
     response = client.get(
-        f"/api/v1/users/authors/{uuid4()}", 
+        f"/api/v1/users/{uuid4()}", 
         headers=auth_headers
     )
     assert response.status_code == 404
 
 
-def test_get_reader_as_author(client, auth_headers, test_reader):
-    """Test getting a reader as an author (should fail with 400 Bad Request)"""
+def test_get_reader(client, auth_headers, test_reader):
+    """Test getting a reader user"""
     response = client.get(
-        f"/api/v1/users/authors/{test_reader.id}", 
+        f"/api/v1/users/{test_reader.id}", 
         headers=auth_headers
     )
-    assert response.status_code == 400
-    assert "User is not an author" in response.json()["detail"]
+    assert response.status_code == 200
+    assert response.json()["email"] == test_reader.email
+    assert response.json()["account_type"] == AccountType.READER.value
 
 
-def test_get_authors_pagination(client, auth_headers, db_session_for_test):
-    """Test pagination for getting authors"""
-    # Create multiple authors for testing pagination
+def test_get_users_pagination(client, auth_headers, db_session_for_test):
+    """Test pagination for getting users"""
+    # Create multiple users for testing pagination
     for i in range(3):
-        author_data = {
-            "email": f"pagination_author{i}@test.com",
+        user_data = {
+            "email": f"pagination_user{i}@test.com",
             "password": "password123",
             "first_name": f"Pagination{i}",
-            "last_name": "Author",
+            "last_name": "User",
             "account_type": AccountType.AUTHOR
         }
-        users.create(db_session_for_test, author_data)
+        users.create(db_session_for_test, user_data)
     
     # Test with skip parameter
-    response = client.get("/api/v1/users/authors?skip=1&limit=2", headers=auth_headers)
+    response = client.get(
+        "/api/v1/users/all?skip=1&limit=2", 
+        headers=auth_headers
+    )
     assert response.status_code == 200
-    assert len(response.json()) <= 2  # Should return at most 2 authors
+    assert len(response.json()) <= 2  # Should return at most 2 users
     
     # Test with limit parameter
-    response = client.get("/api/v1/users/authors?limit=1", headers=auth_headers)
+    response = client.get(
+        "/api/v1/users/all?limit=1", 
+        headers=auth_headers
+    )
     assert response.status_code == 200
-    assert len(response.json()) == 1  # Should return exactly 1 author
+    assert len(response.json()) == 1  # Should return exactly 1 user
 
 
-def test_get_authors_unauthenticated(client):
-    """Test getting authors without authentication (should fail)"""
-    response = client.get("/api/v1/users/authors")
+def test_get_users_unauthenticated(client):
+    """Test getting users without authentication (should fail)"""
+    response = client.get("/api/v1/users/all")
     assert response.status_code == 401
 
 
-def test_get_author_unauthenticated(client, test_author):
-    """Test getting a specific author without authentication (should fail)"""
+def test_get_user_unauthenticated(client, test_author):
+    """Test getting a specific user without authentication (should fail)"""
     response = client.get(
-        f"/api/v1/users/authors/{test_author.id}"
+        f"/api/v1/users/{test_author.id}"
     )
     assert response.status_code == 401 
