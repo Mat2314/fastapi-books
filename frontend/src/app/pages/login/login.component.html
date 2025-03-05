@@ -1,0 +1,122 @@
+<div class="login-container" [style.--background-image]="'url(' + backgroundImageUrl + ')'">
+  <mat-card class="login-card">
+    <mat-card-header>
+      <div class="title-container">
+        <div class="quill-icon">
+          <svg viewBox="0 0 24 24" width="36" height="36">
+            <path fill="currentColor" d="M22,2C22,2 14.36,1.63 8.34,9.88C3.72,16.21 2,22 2,22L3.94,21C5.38,18.5 6.13,17.47 7.54,16C10.07,16.74 12.71,16.65 15,14C13,13.44 11.4,13.57 9.04,13.81C11.69,12 13.5,11.6 16,12L17,10C15.5,9.5 14,9.5 12,10C14.24,8.04 15.27,7.45 17,7L19,5C17.5,5 16,5 14,6C16,3.5 18,2.5 21,2H22M4.37,10.3C5.12,10.13 5.94,9.96 6.83,9.84C7.24,9.28 7.69,8.73 8.17,8.19C7.85,8.23 7.53,8.28 7.22,8.34C6.14,8.56 5.09,8.84 4.37,10.3Z" />
+          </svg>
+        </div>
+        <mat-card-title>Welcome to Fabulous Books</mat-card-title>
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <mat-tab-group class="auth-tabs" mat-stretch-tabs="false" mat-align-tabs="center" animationDuration="300ms">
+        <!-- Login Tab -->
+        <mat-tab label="Login">
+          <div class="tab-container">
+            <div class="scrollable-content">
+              <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="form-container">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" placeholder="Enter your email" type="email">
+                  <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+                    Email is required
+                  </mat-error>
+                  <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+                    Please enter a valid email address
+                  </mat-error>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Password</mat-label>
+                  <input matInput [type]="hideLoginPassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password">
+                  <button mat-icon-button matSuffix (click)="hideLoginPassword = !hideLoginPassword" type="button">
+                    <mat-icon>{{hideLoginPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                  </button>
+                  <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+                    Password is required
+                  </mat-error>
+                </mat-form-field>
+              </form>
+            </div>
+            <div class="button-container" style="padding-left: 20px; padding-right: 30px; box-sizing: border-box;">
+              <button mat-raised-button color="primary" class="submit-button" style="width: 100%;"
+                      [disabled]="loginForm.invalid" (click)="onLogin()">
+                Login
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+        
+        <!-- Register Tab -->
+        <mat-tab label="Register">
+          <div class="tab-container">
+            <div class="scrollable-content">
+              <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="form-container">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>First Name</mat-label>
+                  <input matInput formControlName="first_name" placeholder="Enter your first name">
+                  <mat-error *ngIf="registerForm.get('first_name')?.hasError('required')">
+                    First name is required
+                  </mat-error>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput formControlName="last_name" placeholder="Enter your last name">
+                  <mat-error *ngIf="registerForm.get('last_name')?.hasError('required')">
+                    Last name is required
+                  </mat-error>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" placeholder="Enter your email" type="email">
+                  <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
+                    Email is required
+                  </mat-error>
+                  <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
+                    Please enter a valid email address
+                  </mat-error>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Password</mat-label>
+                  <input matInput [type]="hideRegisterPassword ? 'password' : 'text'" formControlName="password" placeholder="Choose a password">
+                  <button mat-icon-button matSuffix (click)="hideRegisterPassword = !hideRegisterPassword" type="button">
+                    <mat-icon>{{hideRegisterPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                  </button>
+                  <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
+                    Password is required
+                  </mat-error>
+                  <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
+                    Password must be at least 8 characters long
+                  </mat-error>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Account Type</mat-label>
+                  <mat-select formControlName="account_type">
+                    <mat-option value="reader">Reader</mat-option>
+                    <mat-option value="author">Author</mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="registerForm.get('account_type')?.hasError('required')">
+                    Account type is required
+                  </mat-error>
+                </mat-form-field>
+              </form>
+            </div>
+            <div class="button-container" style="padding-left: 20px; padding-right: 30px; box-sizing: border-box;">
+              <button mat-raised-button color="primary" class="submit-button" style="width: 100%;"
+                      [disabled]="registerForm.invalid" (click)="onRegister()">
+                Register
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+</div>
