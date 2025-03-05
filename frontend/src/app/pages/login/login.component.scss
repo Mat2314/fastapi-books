@@ -1,0 +1,116 @@
+// Import the animation styles
+@import './login-animation.scss';
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(63, 81, 181, 0.8), rgba(156, 39, 176, 0.8));
+    z-index: -1;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--background-image, url('/assets/images/background.jpg'));
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px);
+    opacity: 0.4;
+    z-index: -2;
+  }
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  }
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+// Override button container styles
+.button-container {
+  padding-top: 15px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  padding-left: 20px; // Match the padding of form fields
+  padding-right: 30px; // Account for scrollbar and padding
+  width: 100%; // Ensure full width
+  box-sizing: border-box; // Include padding in width calculation
+}
+
+// Override submit button styles
+.submit-button {
+  width: 100%; // Make button full width
+  margin-top: 0; // Remove top margin
+  height: 45px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+mat-card-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #3f51b5;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+mat-card-header {
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+::ng-deep .mat-mdc-tab-body-content {
+  padding-top: 20px;
+}
+
+::ng-deep .mat-mdc-tab-group {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

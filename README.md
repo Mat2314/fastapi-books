@@ -26,7 +26,7 @@ Later on:
 It is suggested to run it locally in the VSCode with the debugger. Configure the debugger specifying the following values in `launch.json` file:
 ```
 "args": [
-    "api.main:app",
+    "main:app",
     "--reload"
 ],
 ```
@@ -49,8 +49,34 @@ Maintenance database: fabooks (check in docker-compose)
 Password: mypassword (check in docker-compose)
 ```
 
+## Running dev
+To run the app locally in dev mode run the following command. It will start the postgres database and pgadmin service. Migration will be run automatically.
+```
+make dev
+```
+
+Then you can run your debugger in VSCode and the api should be available under `http://localhost:8000`
+
+To browse the database go to `http://localhost:8999` and use credentials from the file docker-compose file to access the panel.
+
+Alternatively you can enter docker container and run psql command to connect to the database.
+
+```
+docker exec -it db bash
+psql -U mat -d fabooks
+```
+
+
 ## Running tests
-...
+To run tests locally run:
+```
+make test
+```
+
+To run tests with coverage run:
+```
+make test_coverage
+```
 
 
 ## Run in Production

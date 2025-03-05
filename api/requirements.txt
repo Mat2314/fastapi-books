@@ -2,3 +2,14 @@ fastapi[standard]
 pytest
 pytest-watch
 pytest-cov
+psycopg2-binary
+sqlalchemy
+alembic
+python-dotenv
+sqlmodel
+pydantic-settings
+faker
+typer[all]
+python-jose[cryptography] 
+passlib[bcrypt] 
+python-multipart
