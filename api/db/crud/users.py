@@ -23,15 +23,7 @@ class CRUDUsers(CRUDBase[Users]):
         print("\nAuthenticating user...")
         user = db.exec(select(Users).where(Users.email == email)).first()
         print("Found user:", user is not None)
-        if user:
-            print("User details:", {
-                "email": user.email,
-                "stored_password": user.password,
-                "account_type": user.account_type
-            })
-            print("Verifying password...")
-            is_valid = verify_password(password, user.password)
-            print("Password valid:", is_valid)
+        
         if not user:
             return None
         if not verify_password(password, user.password):

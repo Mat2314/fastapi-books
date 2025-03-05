@@ -7,6 +7,10 @@ from db.models import Users, AccountType
 from core.security import verify_password
 
 
+# Counter for generating unique emails
+_email_counter = 0
+
+
 @pytest.fixture
 def crud_users():
     return CRUDUsers(Users)
@@ -14,8 +18,12 @@ def crud_users():
 
 @pytest.fixture
 def sample_user():
+    """Generate a unique user for each test"""
+    global _email_counter
+    _email_counter += 1
+    email = f"test_{_email_counter}@example.com"
     return {
-        "email": "test@example.com",
+        "email": email,
         "password": "testpassword123",
         "first_name": "Test",
         "last_name": "User",
@@ -23,7 +31,9 @@ def sample_user():
     }
 
 
-def test_create_user(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_create_user(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Test creating a user
     user = crud_users.create(db_session, sample_user)
     
@@ -36,7 +46,9 @@ def test_create_user(db_session: Session, crud_users: CRUDUsers, sample_user: di
     assert user.id is not None
 
 
-def test_authenticate_user(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_authenticate_user(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Create test user
     crud_users.create(db_session, sample_user)
     
@@ -63,7 +75,9 @@ def test_authenticate_user(db_session: Session, crud_users: CRUDUsers, sample_us
     ) is None
 
 
-def test_get_by_email(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_get_by_email(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Create test user
     created_user = crud_users.create(db_session, sample_user)
     
@@ -77,21 +91,22 @@ def test_get_by_email(db_session: Session, crud_users: CRUDUsers, sample_user: d
     assert not_found is None
 
 
-def test_get_user(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
-    # Create test user
-    created_user = crud_users.create(db_session, sample_user)
-    
+def test_get_user(
+    db_session: Session, crud_users: CRUDUsers, test_user: Users
+):
     # Test getting existing user
-    found_user = crud_users.get(db_session, created_user.id)
+    found_user = crud_users.get(db_session, test_user.id)
     assert found_user is not None
-    assert found_user.id == created_user.id
+    assert found_user.id == test_user.id
     
     # Test getting non-existent user
     not_found = crud_users.get(db_session, uuid4())
     assert not_found is None
 
 
-def test_update_user(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_update_user(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Create test user
     created_user = crud_users.create(db_session, sample_user)
     
@@ -109,7 +124,9 @@ def test_update_user(db_session: Session, crud_users: CRUDUsers, sample_user: di
     assert updated_user.email == sample_user["email"]  # Unchanged field
 
 
-def test_delete_user(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_delete_user(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Create test user
     created_user = crud_users.create(db_session, sample_user)
     
@@ -149,7 +166,9 @@ def test_get_multi_users(db_session: Session, crud_users: CRUDUsers):
     assert skipped_users[0] != all_users[0]
 
 
-def test_create_user_with_none_values(db_session: Session, crud_users: CRUDUsers):
+def test_create_user_with_none_values(
+    db_session: Session, crud_users: CRUDUsers
+):
     # Test creating a user with minimal required fields
     user_data = {
         "email": "minimal@example.com",
@@ -162,7 +181,9 @@ def test_create_user_with_none_values(db_session: Session, crud_users: CRUDUsers
     assert user.account_type == AccountType.READER
 
 
-def test_authenticate_user_detailed(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_authenticate_user_detailed(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Create test user
     created_user = crud_users.create(db_session, sample_user)
     
@@ -193,7 +214,9 @@ def test_authenticate_user_detailed(db_session: Session, crud_users: CRUDUsers, 
     assert result.id == created_user.id
 
 
-def test_get_by_email_detailed(db_session: Session, crud_users: CRUDUsers, sample_user: dict):
+def test_get_by_email_detailed(
+    db_session: Session, crud_users: CRUDUsers, sample_user: dict
+):
     # Create test user
     created_user = crud_users.create(db_session, sample_user)
     
@@ -203,9 +226,13 @@ def test_get_by_email_detailed(db_session: Session, crud_users: CRUDUsers, sampl
     assert found_user.id == created_user.id
     
     # Test case sensitivity
-    found_user = crud_users.get_by_email(db_session, sample_user["email"].upper())
+    found_user = crud_users.get_by_email(
+        db_session, sample_user["email"].upper()
+    )
     assert found_user is None  # Should be None as emails are case-sensitive
     
     # Test non-existent email
-    not_found = crud_users.get_by_email(db_session, "nonexistent@example.com")
+    not_found = crud_users.get_by_email(
+        db_session, "nonexistent@example.com"
+    )
     assert not_found is None 

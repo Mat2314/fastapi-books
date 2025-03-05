@@ -7,16 +7,25 @@ stop:
 	docker compose -f dev.docker-compose.yaml down
 
 create_test_db:
-	docker exec db psql -U mat -d fabooks -c "CREATE DATABASE test_db;" || true
+	docker compose -f dev.docker-compose.yaml exec db psql -U mat -d fabooks -c "CREATE DATABASE test_db;" || true
 
-test: dev create_test_db
-	cd api/ && \
-	pytest
+test: 
+	@TESTING=true; \
+	docker compose -f dev.docker-compose.yaml up -d; \
+	sleep 2; \
+	$(MAKE) create_test_db; \
+	$(MAKE) migrate; \
+	cd api/ && pytest; \
 	$(MAKE) stop
 
-test_coverage: dev create_test_db
-	cd api/ && \
-	pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/ 
+
+test_coverage: 
+	@TESTING=true; \
+	docker compose -f dev.docker-compose.yaml up -d; \
+	sleep 2; \
+	$(MAKE) create_test_db; \
+	$(MAKE) migrate; \
+	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/; \
 	$(MAKE) stop
 
 migrate:

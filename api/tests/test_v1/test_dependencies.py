@@ -9,11 +9,19 @@ from db.models import Users, AccountType
 
 
 @pytest.fixture
-def test_user(db_session) -> Users:
-    """Create a test user and return it"""
+def auth_test_user(db_session) -> Users:
+    """Create a test user specifically for auth tests"""
     from db.crud.users import users
+    
+    email = "testauth@example.com"
+    
+    # Check if user already exists
+    existing_user = users.get_by_email(db_session, email)
+    if existing_user:
+        return existing_user
+    
     user_data = {
-        "email": "testauth@example.com",
+        "email": email,  # Different email from other tests
         "password": "testpass123",
         "first_name": "Test",
         "last_name": "Auth",
@@ -23,16 +31,18 @@ def test_user(db_session) -> Users:
 
 
 @pytest.fixture
-def valid_token(test_user) -> str:
+def valid_token(auth_test_user) -> str:
     """Create a valid JWT token for the test user"""
-    return create_access_token({"sub": str(test_user.id)})
+    return create_access_token({"sub": str(auth_test_user.id)})
 
 
-async def test_get_current_user_valid_token(db_session, test_user, valid_token):
+async def test_get_current_user_valid_token(
+    db_session, auth_test_user, valid_token
+):
     """Test successful user authentication with valid token"""
     user = await get_current_user(db_session, valid_token)
-    assert user.id == test_user.id
-    assert user.email == test_user.email
+    assert user.id == auth_test_user.id
+    assert user.email == auth_test_user.email
 
 
 async def test_get_current_user_invalid_token(db_session):
@@ -44,14 +54,14 @@ async def test_get_current_user_invalid_token(db_session):
     assert exc_info.value.detail == "Could not validate credentials"
 
 
-async def test_get_current_user_expired_token(db_session, test_user):
+async def test_get_current_user_expired_token(db_session, auth_test_user):
     """Test authentication failure with expired token"""
     # Create an expired token by manually encoding with expired timestamp
     from datetime import datetime, timedelta
     expired_timestamp = datetime.now(datetime.UTC) - timedelta(days=1)
     
     expired_token = jwt.encode(
-        {"sub": str(test_user.id), "exp": expired_timestamp},
+        {"sub": str(auth_test_user.id), "exp": expired_timestamp},
         SECRET_KEY,
         algorithm=ALGORITHM
     )

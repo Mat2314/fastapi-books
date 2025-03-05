@@ -31,9 +31,9 @@ def sample_book(test_author: Users):
         "content": "This is the book content"
     }
 
-def test_get_user_books(db_session: Session, crud_books: CRUDBooks, test_author: Users):
+def test_get_user_books(db_session_for_test: Session, crud_books: CRUDBooks, test_author: Users):
     # Create multiple books for different authors
-    other_author = users.create(db_session, {
+    other_author = users.create(db_session_for_test, {
         "email": "other@test.com",
         "password": "password123",
         "first_name": "Other",
@@ -53,7 +53,7 @@ def test_get_user_books(db_session: Session, crud_books: CRUDBooks, test_author:
         for i in range(3)
     ]
     for book in books_author1:
-        crud_books.create(db_session, book)
+        crud_books.create(db_session_for_test, book)
     
     # Create a book for different author
     other_book = {
@@ -63,22 +63,22 @@ def test_get_user_books(db_session: Session, crud_books: CRUDBooks, test_author:
         "description": "A test book",
         "content": "This is the book content"
     }
-    crud_books.create(db_session, other_book)
+    crud_books.create(db_session_for_test, other_book)
 
     # Test basic retrieval
-    result = crud_books.get_books_by_author(db_session, test_author.id)
+    result = crud_books.get_books_by_author(db_session_for_test, test_author.id)
     assert len(result) == 3
     assert all(book.author_id == test_author.id for book in result)
 
     # Test pagination with skip
-    result = crud_books.get_books_by_author(db_session, test_author.id)
+    result = crud_books.get_books_by_author(db_session_for_test, test_author.id)
     assert len(result) == 3
 
     # Test pagination with limit
-    result = crud_books.get_books_by_author(db_session, test_author.id)
+    result = crud_books.get_books_by_author(db_session_for_test, test_author.id)
     assert len(result) == 3
 
     # Test with non-existent author
     non_existent_id = uuid4()
-    result = crud_books.get_books_by_author(db_session, non_existent_id)
+    result = crud_books.get_books_by_author(db_session_for_test, non_existent_id)
     assert len(result) == 0 

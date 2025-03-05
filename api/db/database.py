@@ -20,7 +20,7 @@ def get_database_url() -> str:
     )
 
 # Create engine based on environment
-engine = create_engine(get_database_url(), echo=True)
+engine = create_engine(get_database_url(), echo=False)
 
 def init_db():
     SQLModel.metadata.create_all(engine)

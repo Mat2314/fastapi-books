@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from core.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from db.crud.users import users
@@ -52,7 +52,9 @@ def login(
         "username": form_data.username,
         "password": form_data.password,  # Don't log passwords in production!
     })
-    
+    print(f"#########################")
+    print(f"Users in db auth: {db.exec(select(Users)).all()}")
+    print(f"#########################")
     user = users.authenticate(db, form_data.username, form_data.password)
     print("User found:", user is not None)
     
