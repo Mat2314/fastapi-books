@@ -28,6 +28,12 @@ test_coverage:
 	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/; \
 	cd .. &&$(MAKE) stop
 
+test_frontend:
+	cd frontend/ && npm test
+
+test_frontend_coverage:
+	cd frontend/ && npm run test:coverage
+
 migrate:
 	cd api/ && alembic upgrade head
 

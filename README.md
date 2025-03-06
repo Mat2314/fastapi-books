@@ -68,15 +68,26 @@ psql -U mat -d fabooks
 
 
 ## Running tests
-To run tests locally run:
+To run backend tests locally run:
 ```
 make test
 ```
 
-To run tests with coverage run:
+To run backend tests with coverage run:
 ```
 make test_coverage
 ```
+
+To run frontend tests locally run:
+```
+make test_frontend
+```
+
+To run frontend tests with coverage run:
+```
+make test_frontend_coverage
+```
+
 
 
 ## Run in Production
