@@ -117,6 +117,32 @@ def test_get_users(client, auth_headers, test_author):
     assert test_user_in_response["email"] == test_author.email
 
 
+def test_get_me(client, auth_headers, test_author):
+    """Test getting the current authenticated user"""
+    response = client.get("/api/v1/users/me", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json()["id"] == str(test_author.id)
+    assert response.json()["email"] == test_author.email
+    assert response.json()["first_name"] == test_author.first_name
+    assert response.json()["last_name"] == test_author.last_name
+    assert response.json()["account_type"] == AccountType.AUTHOR.value
+
+
+def test_get_me_as_reader(client, reader_headers, test_reader):
+    """Test getting the current authenticated user as a reader"""
+    response = client.get("/api/v1/users/me", headers=reader_headers)
+    assert response.status_code == 200
+    assert response.json()["id"] == str(test_reader.id)
+    assert response.json()["email"] == test_reader.email
+    assert response.json()["account_type"] == AccountType.READER.value
+
+
+def test_get_me_unauthenticated(client):
+    """Test getting the current user without authentication"""
+    response = client.get("/api/v1/users/me")
+    assert response.status_code == 401
+
+
 def test_get_user(client, auth_headers, test_author):
     """Test getting a specific user"""
     response = client.get(

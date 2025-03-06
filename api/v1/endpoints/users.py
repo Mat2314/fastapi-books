@@ -23,6 +23,14 @@ def get_users(
     return all_users
 
 
+@router.get("/me", response_model=Users)
+def get_current_user_info(
+    current_user: Users = Depends(get_current_user),
+):
+    """Get information about the currently authenticated user"""
+    return current_user
+
+
 @router.get("/{user_id}", response_model=Users)
 def get_user(
     user_id: UUID,

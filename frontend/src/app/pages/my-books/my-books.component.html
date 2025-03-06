@@ -1,0 +1,61 @@
+<div class="my-books-container">
+  <div class="header">
+    <h1 class="page-title">My Books</h1>
+    <button mat-raised-button color="primary" (click)="createNewBook()">
+      <mat-icon>add</mat-icon>
+      New Book
+    </button>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading your books...</p>
+  </div>
+  
+  <div *ngIf="!loading" class="books-list">
+    <mat-card *ngFor="let book of myBooks" class="book-card">
+      <mat-card-header>
+        <div mat-card-avatar [ngClass]="{'published-icon': book.published, 'draft-icon': !book.published}">
+          <mat-icon>{{ book.published ? 'public' : 'edit' }}</mat-icon>
+        </div>
+        <mat-card-title>{{ book.title }}</mat-card-title>
+        <mat-card-subtitle>
+          {{ book.published ? 'Published' : 'Draft' }} • Created {{ book.created_at | date:'medium' }}
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p>{{ book.content }}</p>
+      </mat-card-content>
+      
+      <mat-divider></mat-divider>
+      
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="editBook(book.id)">
+          <mat-icon>edit</mat-icon>
+          EDIT
+        </button>
+        
+        <button mat-button [color]="book.published ? 'warn' : 'accent'" 
+                (click)="togglePublishStatus(book.id, book.published)"
+                [matTooltip]="book.published ? 'Unpublish this book' : 'Publish this book'">
+          <mat-icon>{{ book.published ? 'unpublished' : 'publish' }}</mat-icon>
+          {{ book.published ? 'UNPUBLISH' : 'PUBLISH' }}
+        </button>
+        
+        <button mat-button color="warn" (click)="deleteBook(book.id)">
+          <mat-icon>delete</mat-icon>
+          DELETE
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+  
+  <div *ngIf="!loading && myBooks.length === 0" class="no-books">
+    <mat-icon>create</mat-icon>
+    <p>You haven't created any books yet.</p>
+    <button mat-raised-button color="primary" (click)="createNewBook()">
+      Create Your First Book
+    </button>
+  </div>
+</div> 

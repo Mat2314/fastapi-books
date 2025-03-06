@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
+// import { UserService } from './user.service';
 
 interface LoginResponse {
   access_token: string;
@@ -26,7 +27,11 @@ export class AuthService {
   
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(
+    private http: HttpClient, 
+    private router: Router,
+    // private userService: UserService
+  ) { }
 
   login(email: string, password: string): Observable<LoginResponse> {
     const formData = new FormData();
@@ -38,6 +43,7 @@ export class AuthService {
       tap(response => {
         this.setToken(response.access_token);
         this.isAuthenticatedSubject.next(true);
+        // this.userService.loadCurrentUser();
       })
     );
   }
@@ -55,6 +61,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     this.isAuthenticatedSubject.next(false);
+    // this.userService.clearCurrentUser();
     this.router.navigate(['/login']);
   }
 
