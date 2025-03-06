@@ -4,8 +4,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BookService, Book } from '../../services/book.service';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs/operators';
+import { BookService, Book } from '../../services/book.service';
 import { TruncatePipe } from '../../pipes/truncate.pipe';
 
 @Component({
@@ -17,6 +18,7 @@ import { TruncatePipe } from '../../pipes/truncate.pipe';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    RouterLink,
     TruncatePipe
   ],
   templateUrl: './books.component.html',

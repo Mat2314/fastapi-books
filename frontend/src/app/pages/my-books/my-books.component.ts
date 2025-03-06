@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BookService, Book } from '../../services/book.service';
 import { finalize } from 'rxjs/operators';
 import { BookDialogComponent, BookDialogData } from '../../components/book-dialog/book-dialog.component';
+import { RouterLink } from '@angular/router';
 
 interface MyBook extends Book {
   published: boolean;
@@ -28,7 +29,8 @@ interface MyBook extends Book {
     MatDividerModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    RouterLink
   ],
   templateUrl: './my-books.component.html',
   styleUrl: './my-books.component.scss'

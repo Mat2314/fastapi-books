@@ -3,6 +3,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { BooksComponent } from './pages/books/books.component';
 import { MyBooksComponent } from './pages/my-books/my-books.component';
+import { BookDetailComponent } from './pages/book-detail/book-detail.component';
 import { LayoutComponent } from './components/layout/layout.component';
 import { authGuard } from './guards/auth.guard';
 import { authorGuard } from './guards/author.guard';
@@ -17,6 +18,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'books', component: BooksComponent },
+      { path: 'books/:id', component: BookDetailComponent },
       { path: 'my-books', component: MyBooksComponent, canActivate: [authorGuard] }
     ]
   },

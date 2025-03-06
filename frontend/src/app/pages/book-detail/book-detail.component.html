@@ -1,0 +1,51 @@
+<div class="book-detail-container">
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading book...</p>
+  </div>
+
+  <div *ngIf="error" class="error-container">
+    <mat-icon>error</mat-icon>
+    <h2>Book not found</h2>
+    <p>The book you're looking for doesn't exist or you don't have permission to view it.</p>
+    <button mat-raised-button color="primary" (click)="navigateToBooks()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Books
+    </button>
+  </div>
+
+  <div *ngIf="!loading && !error && book" class="book-content">
+    <div class="book-header">
+      <button mat-icon-button color="primary" (click)="navigateToBooks()" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1 class="book-title">{{ book.title }}</h1>
+    </div>
+
+    <mat-card class="book-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>book</mat-icon>
+        <mat-card-title>{{ book.title }}</mat-card-title>
+        <mat-card-subtitle>
+          By {{ book.author_name || 'Unknown Author' }}
+          <span class="date-info">• Published {{ book.created_at | date:'mediumDate' }}</span>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-divider></mat-divider>
+
+      <mat-card-content>
+        <div class="book-full-content">
+          <p>{{ book.content }}</p>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="navigateToBooks()">
+          <mat-icon>arrow_back</mat-icon>
+          BACK TO BOOKS
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

@@ -36,6 +36,11 @@
           EDIT
         </button>
         
+        <button mat-button [routerLink]="['/books', book.id]">
+          <mat-icon>visibility</mat-icon>
+          READ
+        </button>
+        
         <button mat-button [color]="book.published ? 'warn' : 'accent'" 
                 (click)="togglePublishStatus(book.id, book.published)"
                 [matTooltip]="book.published ? 'Unpublish this book' : 'Publish this book'">
