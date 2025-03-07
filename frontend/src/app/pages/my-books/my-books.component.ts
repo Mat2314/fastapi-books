@@ -11,7 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { BookService, Book } from '../../services/book.service';
 import { finalize } from 'rxjs/operators';
 import { BookDialogComponent, BookDialogData } from '../../components/book-dialog/book-dialog.component';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 
 interface MyBook extends Book {
   published: boolean;
@@ -42,7 +42,8 @@ export class MyBooksComponent implements OnInit {
   constructor(
     private bookService: BookService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
   
   ngOnInit(): void {
@@ -66,70 +67,11 @@ export class MyBooksComponent implements OnInit {
   }
   
   createNewBook(): void {
-    const dialogRef = this.dialog.open(BookDialogComponent, {
-      width: '600px',
-      data: { isEdit: false } as BookDialogData
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.bookService.createBook(result).subscribe({
-          next: (newBook) => {
-            this.myBooks.unshift({
-              ...newBook,
-              published: true // Default to published
-            });
-            this.snackBar.open('Book created successfully', 'Close', {
-              duration: 3000
-            });
-          },
-          error: (error) => {
-            console.error('Error creating book:', error);
-            this.snackBar.open('Failed to create book', 'Close', {
-              duration: 3000
-            });
-          }
-        });
-      }
-    });
+    this.router.navigate(['/book/new']);
   }
   
   editBook(bookId: string): void {
-    const book = this.myBooks.find(b => b.id === bookId);
-    if (!book) return;
-    
-    const dialogRef = this.dialog.open(BookDialogComponent, {
-      width: '600px',
-      data: { 
-        book: book,
-        isEdit: true 
-      } as BookDialogData
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.bookService.updateBook(bookId, result).subscribe({
-          next: (updatedBook) => {
-            const index = this.myBooks.findIndex(b => b.id === bookId);
-            if (index !== -1) {
-              this.myBooks[index] = {
-                ...this.myBooks[index],
-                ...updatedBook
-              };
-            }
-            this.snackBar.open('Book updated successfully', 'Close', {
-              duration: 3000
-            });
-          },
-          error: (error) => {
-            console.error('Error updating book:', error);
-            this.snackBar.open('Failed to update book', 'Close', {
-              duration: 3000
-            });
-          }
-        });
-      }
-    });
+    this.router.navigate(['/book/edit', bookId]);
   }
   
   deleteBook(bookId: string): void {

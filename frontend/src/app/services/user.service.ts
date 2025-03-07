@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface User {
@@ -45,12 +45,18 @@ export class UserService {
   }
   
   isAuthor(): Observable<boolean> {
-    return new Observable<boolean>(observer => {
-      this.getCurrentUser().subscribe(user => {
-        observer.next(user?.account_type === 'author');
-        observer.complete();
-      });
-    });
+    // Ensure we have the latest user data
+    if (!this.currentUserSubject.value) {
+      this.loadCurrentUser();
+    }
+    
+    // Derive isAuthor directly from the currentUser$ observable
+    return this.currentUser$.pipe(
+      map(user => {
+        const isAuthor = user?.account_type === 'author';
+        return isAuthor;
+      })
+    );
   }
   
   clearCurrentUser(): void {

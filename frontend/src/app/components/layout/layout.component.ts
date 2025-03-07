@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-layout',
@@ -28,18 +28,20 @@ import { Observable } from 'rxjs';
   styleUrl: './layout.component.scss'
 })
 export class LayoutComponent implements OnInit {
-  isAuthor$: Observable<boolean>;
+  // Initialize with a default value of false
+  isAuthor$: Observable<boolean> = of(false);
   
   constructor(
     private authService: AuthService,
     private userService: UserService
-  ) {
-    this.isAuthor$ = this.userService.isAuthor();
-  }
+  ) {}
   
   ngOnInit(): void {
     // Load user data when component initializes
     this.userService.loadCurrentUser();
+    
+    // Initialize isAuthor$ after loading user data
+    this.isAuthor$ = this.userService.isAuthor();
   }
   
   logout(): void {
