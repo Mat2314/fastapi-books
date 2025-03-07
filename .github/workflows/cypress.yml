@@ -1,0 +1,63 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'frontend/**'
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22.x]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Start backend services
+      run: |
+        make dev
+        sleep 10  # Give the backend time to start
+
+    - name: Cypress run
+      uses: cypress-io/github-action@v6
+      with:
+        working-directory: frontend
+        build: npm run build
+        start: npm start
+        wait-on: 'http://localhost:4200'
+        wait-on-timeout: 120
+        browser: chrome
+        record: false
+
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: cypress-screenshots
+        path: frontend/cypress/screenshots
+        if-no-files-found: ignore
+
+    - name: Upload videos
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: cypress-videos
+        path: frontend/cypress/videos
+        if-no-files-found: ignore 

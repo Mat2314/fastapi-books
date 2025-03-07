@@ -1,0 +1,16 @@
+{
+  "author": {
+    "email": "author@example.com",
+    "password": "password123",
+    "first_name": "Test",
+    "last_name": "Author",
+    "account_type": "author"
+  },
+  "reader": {
+    "email": "reader@example.com",
+    "password": "password123",
+    "first_name": "Test",
+    "last_name": "Reader",
+    "account_type": "reader"
+  }
+} 
