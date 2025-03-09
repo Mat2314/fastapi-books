@@ -1,7 +1,7 @@
 {
   "newBook": {
     "title": "Test Book",
-    "content": "This is a test book created by Cypress.",
+    "content": "This is a test book created by Cypress. It is a test book.",
     "published": true
   },
   "updatedBook": {
