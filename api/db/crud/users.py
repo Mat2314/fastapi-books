@@ -20,9 +20,7 @@ class CRUDUsers(CRUDBase[Users]):
         return db_obj
 
     def authenticate(self, db: Session, email: str, password: str) -> Optional[Users]:
-        print("\nAuthenticating user...")
         user = db.exec(select(Users).where(Users.email == email)).first()
-        print("Found user:", user is not None)
         
         if not user:
             return None

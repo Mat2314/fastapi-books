@@ -6,11 +6,6 @@ from sqlmodel import Session
 from db.crud.books import books
 from db.crud.users import users
 from db.models import AccountType, Users
-from main import app
-
-@pytest.fixture
-def client():
-    return TestClient(app)
 
 @pytest.fixture
 def test_author(db_session: Session) -> Users:
@@ -49,143 +44,111 @@ def test_reader(db_session: Session) -> Users:
         "last_name": "Reader",
         "account_type": AccountType.READER
     }
+    
     return users.create(db_session, reader_data)
 
 @pytest.fixture
-def test_book(db_session_for_test: Session, test_author: Users):
+def test_book(db_session: Session, test_author: Users):
     """Create a test book"""
     book_data = {
         "title": "Test Book",
-        "content": "Test Content",
+        "content": "This is the content of the test book.",
         "author_id": test_author.id
     }
     
-    return books.create(db_session_for_test, book_data)
+    return books.create(db_session, book_data)
 
-@pytest.fixture
-def auth_token(client, test_author):
-    """Get authentication token for author through login"""
-    response = client.post(
-        "/api/v1/auth/login",
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data={
-            "username": test_author.email,
-            "password": "password123"
-        }
-    )
-    assert response.status_code == 200
-    return response.json()["access_token"]
-
-@pytest.fixture
-def reader_token(client, test_reader):
-    """Get authentication token for reader through login"""
-    response = client.post(
-        "/api/v1/auth/login",
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        data={
-            "username": test_reader.email,
-            "password": "password123"
-        }
-    )
-    assert response.status_code == 200
-    return response.json()["access_token"]
-
-@pytest.fixture
-def auth_headers(auth_token):
-    """Create authentication headers with real JWT token for author"""
-    return {"Authorization": f"Bearer {auth_token}"}
-
-@pytest.fixture
-def reader_headers(reader_token):
-    """Create authentication headers with real JWT token for reader"""
-    return {"Authorization": f"Bearer {reader_token}"}
-
-def test_get_books(client, auth_headers, test_book):
+def test_get_books(client: TestClient, auth_headers, test_book):
     """Test getting all books"""
     response = client.get("/api/v1/books", headers=auth_headers)
     assert response.status_code == 200
     
     # Check that at least one book is returned
-    assert len(response.json()) > 0
+    books_list = response.json()
+    assert len(books_list) > 0
     
     # Find the test book in the response by ID
     test_book_in_response = next(
-        (book for book in response.json() if book["id"] == str(test_book.id)), 
+        (book for book in books_list if book["id"] == str(test_book.id)),
         None
     )
     
-    # Assert that the test book is in the response and has the correct title
+    # Assert that the test book is in the response
     assert test_book_in_response is not None
     assert test_book_in_response["title"] == test_book.title
 
-def test_get_book(client, auth_headers, test_book):
+def test_get_book(client: TestClient, auth_headers, test_book):
     """Test getting a specific book"""
     response = client.get(f"/api/v1/books/{test_book.id}", headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["title"] == test_book.title
 
-def test_get_nonexistent_book(client, auth_headers):
+def test_get_nonexistent_book(client: TestClient, auth_headers):
     """Test getting a book that doesn't exist"""
     response = client.get(f"/api/v1/books/{uuid4()}", headers=auth_headers)
     assert response.status_code == 404
 
-def test_create_book_as_author(client, auth_headers):
+def test_create_book_as_author(client: TestClient, auth_headers):
     """Test creating a book as an author"""
     book_data = {
-        "title": "New Book",
-        "content": "New Content"
+        "title": "New Test Book",
+        "content": "This is the content of the new test book."
     }
-    response = client.post("/api/v1/books", headers=auth_headers, json=book_data)
+    
+    response = client.post("/api/v1/books", json=book_data, headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["title"] == book_data["title"]
 
-def test_create_book_as_reader(client, reader_headers):
+def test_create_book_as_reader(client: TestClient, reader_headers):
     """Test creating a book as a reader (should fail)"""
     book_data = {
-        "title": "New Book",
-        "content": "New Content"
+        "title": "Reader's Book",
+        "content": "This is a book that shouldn't be created"
     }
-    response = client.post("/api/v1/books", headers=reader_headers, json=book_data)
+    
+    response = client.post("/api/v1/books", json=book_data, headers=reader_headers)
     assert response.status_code == 403
 
-def test_update_book(client, auth_headers, test_book):
+def test_update_book(client: TestClient, auth_headers, test_book):
     """Test updating a book"""
     update_data = {
-        "title": "Updated Title",
-        "content": "Updated Content"
+        "title": "Updated Test Book",
+        "content": "Updated content"
     }
+    
     response = client.put(
-        f"/api/v1/books/{test_book.id}", 
-        headers=auth_headers, 
-        json=update_data
+        f"/api/v1/books/{test_book.id}",
+        json=update_data,
+        headers=auth_headers
     )
     assert response.status_code == 200
     assert response.json()["title"] == update_data["title"]
 
-def test_update_other_authors_book(client, reader_headers, test_book):
+def test_update_other_authors_book(client: TestClient, reader_headers, test_book):
     """Test updating another author's book (should fail)"""
     update_data = {
-        "title": "Updated Title",
-        "content": "Updated Content"
+        "title": "Reader's Update",
+        "description": "This update should fail"
     }
+    
     response = client.put(
-        f"/api/v1/books/{test_book.id}", 
-        headers=reader_headers, 
-        json=update_data
+        f"/api/v1/books/{test_book.id}",
+        json=update_data,
+        headers=reader_headers
     )
     assert response.status_code == 403
 
-def test_delete_book(client, auth_headers, test_book):
+def test_delete_book(client: TestClient, auth_headers, test_book):
     """Test deleting a book"""
     response = client.delete(f"/api/v1/books/{test_book.id}", headers=auth_headers)
     assert response.status_code == 204
 
-def test_delete_other_authors_book(client, reader_headers, test_book):
+def test_delete_other_authors_book(client: TestClient, reader_headers, test_book):
     """Test deleting another author's book (should fail)"""
     response = client.delete(f"/api/v1/books/{test_book.id}", headers=reader_headers)
     assert response.status_code == 403
 
-def test_delete_nonexistent_book(client, auth_headers):
+def test_delete_nonexistent_book(client: TestClient, auth_headers):
     """Test deleting a book that doesn't exist"""
     response = client.delete(f"/api/v1/books/{uuid4()}", headers=auth_headers)
     assert response.status_code == 404

@@ -36,6 +36,7 @@ def valid_token(auth_test_user) -> str:
     return create_access_token({"sub": str(auth_test_user.id)})
 
 
+@pytest.mark.asyncio
 async def test_get_current_user_valid_token(
     db_session, auth_test_user, valid_token
 ):
@@ -45,6 +46,7 @@ async def test_get_current_user_valid_token(
     assert user.email == auth_test_user.email
 
 
+@pytest.mark.asyncio
 async def test_get_current_user_invalid_token(db_session):
     """Test authentication failure with invalid token"""
     with pytest.raises(HTTPException) as exc_info:
@@ -54,17 +56,17 @@ async def test_get_current_user_invalid_token(db_session):
     assert exc_info.value.detail == "Could not validate credentials"
 
 
+@pytest.mark.asyncio
 async def test_get_current_user_expired_token(db_session, auth_test_user):
     """Test authentication failure with expired token"""
-    # Create an expired token by manually encoding with expired timestamp
-    from datetime import datetime, timedelta
-    expired_timestamp = datetime.now(datetime.UTC) - timedelta(days=1)
+    # Create a token that's already expired
+    import datetime
+    from datetime import timedelta
     
-    expired_token = jwt.encode(
-        {"sub": str(auth_test_user.id), "exp": expired_timestamp},
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
+    expired_time = datetime.datetime.now(datetime.UTC) - timedelta(minutes=30)
+    
+    to_encode = {"sub": str(auth_test_user.id), "exp": expired_time}
+    expired_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     
     with pytest.raises(HTTPException) as exc_info:
         await get_current_user(db_session, expired_token)
@@ -73,13 +75,11 @@ async def test_get_current_user_expired_token(db_session, auth_test_user):
     assert exc_info.value.detail == "Could not validate credentials"
 
 
+@pytest.mark.asyncio
 async def test_get_current_user_missing_sub_claim(db_session):
     """Test authentication failure with token missing sub claim"""
-    token = jwt.encode(
-        {"some_other_claim": "value"},
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
+    # Create a token without the 'sub' claim
+    token = jwt.encode({"not_sub": "something"}, SECRET_KEY, algorithm=ALGORITHM)
     
     with pytest.raises(HTTPException) as exc_info:
         await get_current_user(db_session, token)
@@ -88,10 +88,12 @@ async def test_get_current_user_missing_sub_claim(db_session):
     assert exc_info.value.detail == "Could not validate credentials"
 
 
+@pytest.mark.asyncio
 async def test_get_current_user_nonexistent_user(db_session):
-    """Test authentication failure with token for non-existent user"""
-    # Create token with non-existent user ID
-    token = create_access_token({"sub": str(uuid4())})
+    """Test authentication failure with token for nonexistent user"""
+    # Create a token with a random UUID that doesn't exist in the database
+    nonexistent_id = str(uuid4())
+    token = create_access_token({"sub": nonexistent_id})
     
     with pytest.raises(HTTPException) as exc_info:
         await get_current_user(db_session, token)
@@ -100,8 +102,10 @@ async def test_get_current_user_nonexistent_user(db_session):
     assert exc_info.value.detail == "Could not validate credentials"
 
 
+@pytest.mark.asyncio
 async def test_get_current_user_malformed_uuid(db_session):
-    """Test authentication failure with malformed UUID in token"""
+    """Test authentication failure with token containing malformed UUID"""
+    # Create a token with an invalid UUID format
     token = create_access_token({"sub": "not-a-uuid"})
     
     with pytest.raises(HTTPException) as exc_info:
