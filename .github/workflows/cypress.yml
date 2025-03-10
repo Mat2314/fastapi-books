@@ -48,11 +48,19 @@ jobs:
         make dev
         sleep 10  # Give the backend time to start
 
+    - name: Build with stats
+      working-directory: ./frontend
+      run: npm run build:stats
+
+    - name: Analyze bundle size
+      working-directory: ./frontend
+      run: npm run analyze
+
     - name: Cypress run
       uses: cypress-io/github-action@v6
       with:
         working-directory: frontend
-        build: npm run build
+        build: false  # Skip build since we already built it
         start: npm start
         wait-on: 'http://localhost:4200'
         wait-on-timeout: 120
