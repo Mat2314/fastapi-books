@@ -56,16 +56,16 @@ jobs:
       working-directory: ./frontend
       run: npm run analyze
 
-    - name: Cypress run
-      uses: cypress-io/github-action@v6
-      with:
-        working-directory: frontend
-        build: false  # Skip build since we already built it
-        start: npm start
-        wait-on: 'http://localhost:4200'
-        wait-on-timeout: 120
-        browser: chrome
-        record: false
+    - name: Start Angular server
+      working-directory: ./frontend
+      run: npm start &
+      
+    - name: Wait for server to be ready
+      run: npx wait-on http://localhost:4200 --timeout 60000
+      
+    - name: Run Cypress tests
+      working-directory: ./frontend
+      run: npx cypress run --browser chrome
 
     - name: Upload screenshots
       uses: actions/upload-artifact@v4
