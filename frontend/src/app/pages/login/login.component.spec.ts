@@ -28,6 +28,15 @@ describe('LoginComponent', () => {
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
+    authServiceSpy.login.and.returnValue(of({
+      access_token: 'test_token',
+      refresh_token: 'test_refresh_token',
+      token_type: 'bearer'
+    }));
+    
+    // Add isAuthenticated$ property
+    authServiceSpy.isAuthenticated$ = of(false);
+
     await TestBed.configureTestingModule({
       imports: [
         LoginComponent,
@@ -137,7 +146,7 @@ describe('LoginComponent', () => {
       const testEmail = 'test@example.com';
       const testPassword = 'password123';
       
-      authService.login.and.returnValue(of({ access_token: 'fake-token', token_type: 'bearer' }));
+      authService.login.and.returnValue(of({ access_token: 'fake-token', refresh_token: 'fake-refresh-token', token_type: 'bearer' }));
       
       component.loginForm.setValue({
         email: testEmail,
