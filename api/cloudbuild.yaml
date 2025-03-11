@@ -1,0 +1,31 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/fabooks/api', '.']
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/fabooks/api']
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'fabooks-api'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/fabooks/api'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars=DATABASE_URL=postgresql://mat:supersecretpassword@/fabooks?host=/cloudsql/${PROJECT_ID}:${_REGION}:fabooks-db'
+      - '--add-cloudsql-instances=${PROJECT_ID}:${_REGION}:fabooks-db'
+
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/fabooks/api'
+
+substitutions:
+  _REGION: us-central1
+
+# Only trigger on main branch
+tags: ['github-fabooks-api'] 
