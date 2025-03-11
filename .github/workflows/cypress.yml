@@ -46,7 +46,22 @@ jobs:
     - name: Start backend services
       run: |
         make dev
-        sleep 10  # Give the backend time to start
+        sleep 20  # Give the database more time to start
+
+    - name: Start API service
+      working-directory: ./api
+      run: |
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
+        echo $! > api_pid.txt
+        sleep 10  # Give the API service time to start
+
+    - name: Verify API service is running
+      run: |
+        curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/ | grep 200 || (echo "API service is not running" && exit 1)
+
+    - name: Populate test data
+      run: |
+        make populate records=10
 
     - name: Build with stats
       working-directory: ./frontend
@@ -81,4 +96,11 @@ jobs:
       with:
         name: cypress-videos
         path: frontend/cypress/videos
-        if-no-files-found: ignore 
+        if-no-files-found: ignore
+
+    - name: Stop API service
+      if: always()
+      run: |
+        if [ -f api_pid.txt ]; then
+          kill $(cat api_pid.txt) || true
+        fi 
