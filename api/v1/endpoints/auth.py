@@ -37,16 +37,18 @@ def register(
             detail="Email already registered",
         )
     
-    # Create new user
-    user_in = {
-        "email": email,
-        "password": password,
-        "first_name": first_name,
-        "last_name": last_name,
-        "account_type": account_type
-    }
-    user = users.create(db, user_in)
-    return user
+    # # Create new user
+    # user_in = {
+    #     "email": email,
+    #     "password": password,
+    #     "first_name": first_name,
+    #     "last_name": last_name,
+    #     "account_type": account_type
+    # }
+    # user = users.create(db, user_in)
+    # return user
+    
+    return {"message": "Endpoint temporarily disabled"}
 
 
 @router.post("/login")
