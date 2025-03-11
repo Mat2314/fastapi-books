@@ -31,7 +31,11 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
         
-    user = users.get(db, UUID(user_id))
-    if user is None:
+    try:
+        user = users.get(db, UUID(user_id))
+        if user is None:
+            raise credentials_exception
+        return user
+    except ValueError:
+        # Handle malformed UUID
         raise credentials_exception
-    return user

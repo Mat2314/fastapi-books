@@ -22,6 +22,21 @@ def get_books(
     return books.get_multi(db, skip=skip, limit=limit)
 
 
+@router.get("/user", response_model=List[Books])
+def get_current_user_books(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_session),
+    current_user: Users = Depends(get_current_user),
+):
+    """Get books authored by the current user (authors only)"""
+    if current_user.account_type != AccountType.AUTHOR:
+        return []
+    return books.get_books_by_author(
+        db, current_user.id, skip=skip, limit=limit
+    )
+
+
 @router.get("/{book_id}", response_model=Books)
 def get_book(
     book_id: UUID,

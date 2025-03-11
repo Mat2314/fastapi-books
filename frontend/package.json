@@ -5,8 +5,15 @@
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
+    "build:stats": "ng build --stats-json",
+    "analyze": "node scripts/check-bundle-size.js",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:coverage": "ng test --code-coverage --watch=false",
+    "cypress:setup": "node cypress/scripts/setup-test-users.js",
+    "cypress:open": "npm run cypress:setup && cypress open",
+    "cypress:run": "npm run cypress:setup && cypress run",
+    "e2e": "ng serve --configuration=development & npm run cypress:setup && cypress run"
   },
   "private": true,
   "dependencies": {
@@ -29,6 +36,9 @@
     "@angular/cli": "^17.0.0",
     "@angular/compiler-cli": "^17.0.0",
     "@types/jasmine": "~5.1.0",
+    "axios": "^1.8.2",
+    "chalk": "^4.1.2",
+    "cypress": "^14.1.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

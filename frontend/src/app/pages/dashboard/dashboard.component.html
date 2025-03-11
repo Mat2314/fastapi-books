@@ -1,14 +1,43 @@
-<div class="dashboard-container">
-  <mat-toolbar color="primary" class="dashboard-toolbar">
-    <span>Book Management Dashboard</span>
-    <span class="toolbar-spacer"></span>
-    <button mat-icon-button (click)="logout()">
-      <mat-icon>logout</mat-icon>
-    </button>
-  </mat-toolbar>
+<div class="dashboard-content">
+  <h1 class="page-title">Welcome to Fabulous Books</h1>
   
-  <div class="dashboard-content">
-    <h1>Welcome to the Dashboard!</h1>
-    <p>You have successfully logged in.</p>
+  <div class="dashboard-cards">
+    <mat-card class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>library_books</mat-icon>
+        <mat-card-title>Browse Books</mat-card-title>
+        <mat-card-subtitle>Discover new books to read</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p>Explore our collection of books from various authors. Find your next favorite read!</p>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="navigateToBooks()">
+          <mat-icon>search</mat-icon>
+          BROWSE BOOKS
+        </button>
+      </mat-card-actions>
+    </mat-card>
+    
+    <mat-card *ngIf="isAuthor$ | async" class="dashboard-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>edit</mat-icon>
+        <mat-card-title>My Books</mat-card-title>
+        <mat-card-subtitle>Manage your authored books</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p>View, edit, and manage the books you've authored. Create new books and publish them to the world.</p>
+      </mat-card-content>
+      
+      <mat-card-actions>
+        <button mat-raised-button color="accent" (click)="navigateToMyBooks()">
+          <mat-icon>book</mat-icon>
+          MY BOOKS
+        </button>
+      </mat-card-actions>
+    </mat-card>
   </div>
 </div>

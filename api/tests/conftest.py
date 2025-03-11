@@ -3,6 +3,8 @@ from sqlmodel import Session, SQLModel
 from db.database import engine
 # Import all models to ensure they're registered with SQLModel
 from db.models import Users, AccountType
+from fastapi.testclient import TestClient
+from main import app
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_env():
@@ -110,4 +112,49 @@ def db_session_for_test(db_session):
     # Rollback the transaction after the test
     transaction.rollback()
     # Clean up the session to ensure it's in a clean state for the next test
-    db_session.expire_all() 
+    db_session.expire_all()
+
+# Add shared fixtures to reduce duplication across test files
+
+@pytest.fixture
+def client():
+    """Return a TestClient instance for testing API endpoints"""
+    return TestClient(app)
+
+@pytest.fixture
+def auth_token(client, test_author):
+    """Get authentication token for author through login"""
+    response = client.post(
+        "/api/v1/auth/login",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data={
+            "username": test_author.email,
+            "password": "password123"
+        }
+    )
+    assert response.status_code == 200
+    return response.json()["access_token"]
+
+@pytest.fixture
+def reader_token(client, test_reader):
+    """Get authentication token for reader through login"""
+    response = client.post(
+        "/api/v1/auth/login",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data={
+            "username": test_reader.email,
+            "password": "password123"
+        }
+    )
+    assert response.status_code == 200
+    return response.json()["access_token"]
+
+@pytest.fixture
+def auth_headers(auth_token):
+    """Create authentication headers with real JWT token for author"""
+    return {"Authorization": f"Bearer {auth_token}"}
+
+@pytest.fixture
+def reader_headers(reader_token):
+    """Create authentication headers with real JWT token for reader"""
+    return {"Authorization": f"Bearer {reader_token}"} 

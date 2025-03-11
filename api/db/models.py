@@ -25,7 +25,7 @@ class Books(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str
     content: str
-    # published: bool = Field(default=False)
+    published: bool = Field(default=False)
     
     # Foreign key to author
     author_id: Optional[UUID] = Field(default=None, foreign_key="users.id")

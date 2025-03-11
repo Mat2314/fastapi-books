@@ -25,8 +25,14 @@ test_coverage:
 	sleep 2; \
 	$(MAKE) create_test_db; \
 	$(MAKE) migrate; \
-	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-fail-under=90 tests/; \
+	cd api/ && pytest --cov=. --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=90 tests/; \
 	cd .. &&$(MAKE) stop
+
+test_frontend:
+	cd frontend/ && npm test
+
+test_frontend_coverage:
+	cd frontend/ && npm run test:coverage
 
 migrate:
 	cd api/ && alembic upgrade head
