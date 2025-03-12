@@ -64,6 +64,7 @@ jobs:
           workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
           project_id: '${{ env.PROJECT_ID }}'
           service_account: 'github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          token_format: 'access_token'
 
       # BEGIN - Docker auth and build
       #
@@ -86,7 +87,7 @@ jobs:
 
         uses: 'google-github-actions/deploy-cloudrun@33553064113a37d688aa6937bacbdc481580be17' # google-github-actions/deploy-cloudrun@v2
         with:
-          service: '${{ env.SERVICE }}'
+          service: '${{ env.CLOUD_RUN_SERVICE }}'
           region: '${{ env.REGION }}'
           # NOTE: If using a pre-built image, update the image name below:
 
