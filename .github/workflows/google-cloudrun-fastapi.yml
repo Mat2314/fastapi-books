@@ -37,7 +37,7 @@ on:
 env:
   PROJECT_ID: 'experiments-444412' # TODO: update to your Google Cloud project ID
   REGION: 'us-central1' # TODO: update to your region
-  SERVICE: 'fabooks-service' # TODO: update to your service name
+  SERVICE: 'fastapi-books-repository' # TODO: update to your service name for Artifact Registry
   WORKLOAD_IDENTITY_PROVIDER: 'projects/254943040140/locations/global/workloadIdentityPools/fabooks-pool/providers/github-provider'
 
 jobs:
