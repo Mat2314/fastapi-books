@@ -89,6 +89,10 @@ make test_frontend_coverage
 ```
 
 
+## CI/CD pipeline
+We use Google Cloud and Github Actions to run the CI/CD pipeline.
+
+
 
 ## Run in Production
 ...
