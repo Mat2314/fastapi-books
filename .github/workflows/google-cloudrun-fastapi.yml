@@ -76,8 +76,19 @@ jobs:
           password: '${{ steps.auth.outputs.auth_token }}'
           registry: '${{ env.REGION }}-docker.pkg.dev'
 
+      - name: 'Ensure Artifact Registry Repository Exists'
+        run: |-
+          echo "Checking if repository exists: ${{ env.SERVICE }}"
+          if ! gcloud artifacts repositories describe ${{ env.SERVICE }} --location=${{ env.REGION }} --project=${{ env.PROJECT_ID }} > /dev/null 2>&1; then
+            echo "Repository does not exist, creating it..."
+            gcloud artifacts repositories create ${{ env.SERVICE }} --repository-format=docker --location=${{ env.REGION }} --project=${{ env.PROJECT_ID }}
+          else
+            echo "Repository exists, continuing..."
+          fi
+
       - name: 'Build and Push Container'
         run: |-
+          echo "Building and pushing to: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
           DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
           docker build --tag "${DOCKER_TAG}" -f api/Dockerfile api/
           docker push "${DOCKER_TAG}"
