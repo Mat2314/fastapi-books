@@ -1,0 +1,33 @@
+# API Service Trigger
+---
+name: fabooks-api-trigger
+description: "Trigger for Fabooks API service"
+github:
+  owner: "${_GITHUB_OWNER}"
+  name: "fastapi-books"
+  push:
+    branch: "^main$"
+includedFiles:
+  - "api/**"
+filename: "api/cloudbuild.yaml"
+substitutions:
+  _REGION: "us-central1"
+tags:
+  - "github-fabooks-api"
+
+# Frontend Service Trigger
+---
+name: fabooks-frontend-trigger
+description: "Trigger for Fabooks Frontend service"
+github:
+  owner: "${_GITHUB_OWNER}"
+  name: "fastapi-books"
+  push:
+    branch: "^main$"
+includedFiles:
+  - "frontend/**"
+filename: "frontend/cloudbuild.yaml"
+substitutions:
+  _REGION: "us-central1"
+tags:
+  - "github-fabooks-frontend" 

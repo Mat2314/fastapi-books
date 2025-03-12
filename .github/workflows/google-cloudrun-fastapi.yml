@@ -91,5 +91,5 @@ jobs:
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
         run: |2-
-
           echo ${{ steps.deploy.outputs.url }}
+
