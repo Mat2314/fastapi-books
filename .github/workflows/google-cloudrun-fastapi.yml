@@ -101,8 +101,19 @@ jobs:
           service: '${{ env.CLOUD_RUN_SERVICE }}'
           region: '${{ env.REGION }}'
           # NOTE: If using a pre-built image, update the image name below:
-
           image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/api:${{ github.sha }}'
+          # Add Cloud SQL connection and VPC connector
+          flags: |
+            --vpc-connector=fabooks-connector
+            --vpc-egress=all-traffic
+            --set-env-vars=CLOUD_SQL_CONNECTION_NAME=experiments-444412:us-central1:fabooks-db
+            --set-env-vars=POSTGRES_USER=postgres
+            --set-env-vars=POSTGRES_PASSWORD=supersecretpassword
+            --set-env-vars=POSTGRES_DB=fabooks
+            --set-env-vars=POSTGRES_HOST=172.27.0.3
+            --set-env-vars=POSTGRES_PORT=5432
+            --set-env-vars=ENVIRONMENT=production
+            --allow-unauthenticated
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
         run: |2-
