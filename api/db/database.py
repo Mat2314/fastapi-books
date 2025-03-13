@@ -1,9 +1,10 @@
-from functools import lru_cache
 from sqlmodel import create_engine, SQLModel, Session
 from core.config import settings
 import os
 import logging
+import time
 
+# Import models - keep the import * for model registration with SQLModel
 from db.models import *
 
 logger = logging.getLogger(__name__)
@@ -22,17 +23,36 @@ def get_database_url() -> str:
     if settings.ENVIRONMENT == "production":
         logger.info("Using Cloud SQL in production environment")
         
-        # Check if we have a Cloud SQL connection name
-        if settings.CLOUD_SQL_CONNECTION_NAME:
-            # Format for Cloud SQL with Unix socket
-            # postgresql+pg8000://<db_user>:<db_pass>@/<db_name>?unix_sock=/cloudsql/<cloud_sql_instance_name>/.s.PGSQL.5432
+        # First try direct connection via private IP if available
+        if settings.POSTGRES_HOST and settings.POSTGRES_HOST != "localhost":
+            logger.info(f"Using direct connection to Cloud SQL via private IP: {settings.POSTGRES_HOST}")
             return (
-                f"postgresql+pg8000://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
-                f"@/{settings.POSTGRES_DB}?unix_sock=/cloudsql/{settings.CLOUD_SQL_CONNECTION_NAME}/.s.PGSQL.5432"
+                f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
+                f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
             )
+        # Fall back to Unix socket if private IP is not available
+        elif settings.CLOUD_SQL_CONNECTION_NAME:
+            logger.info(f"Cloud SQL connection name: {settings.CLOUD_SQL_CONNECTION_NAME}")
+            # Format for Cloud SQL with Unix socket
+            socket_path = f"/cloudsql/{settings.CLOUD_SQL_CONNECTION_NAME}/.s.PGSQL.5432"
+            logger.info(f"Socket path: {socket_path}")
+            
+            # Check if socket file exists
+            if os.path.exists(f"/cloudsql/{settings.CLOUD_SQL_CONNECTION_NAME}"):
+                logger.info("Socket directory exists")
+            else:
+                logger.warning(f"Socket directory does not exist: /cloudsql/{settings.CLOUD_SQL_CONNECTION_NAME}")
+            
+            # Use pg8000 for Cloud SQL
+            db_url = (
+                f"postgresql+pg8000://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
+                f"@/{settings.POSTGRES_DB}?unix_sock={socket_path}"
+            )
+            logger.info(f"Using Cloud SQL connection URL: {db_url}")
+            return db_url
         else:
             # Fallback to TCP connection if no socket available
-            logger.warning("No Cloud SQL connection name provided, using TCP connection")
+            logger.warning("No Cloud SQL connection method available, using default TCP connection")
             return (
                 f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
                 f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
@@ -45,6 +65,7 @@ def get_database_url() -> str:
         f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
     )
 
+
 # Create engine based on environment
 engine = None
 
@@ -54,15 +75,40 @@ def get_engine():
     if engine is None:
         db_url = get_database_url()
         logger.info(f"Initializing database connection to: {db_url}")
-        engine = create_engine(db_url, echo=False, pool_pre_ping=True)
+        
+        # Create engine with connection pooling and retry logic
+        engine = create_engine(
+            db_url, 
+            echo=False,
+            pool_pre_ping=True,
+            pool_recycle=300,  # Recycle connections every 5 minutes
+            connect_args={"timeout": 30}  # 30 second connection timeout
+        )
     return engine
+
 
 def init_db():
     """Initialize database schema"""
     try:
         logger.info("Initializing database schema")
-        SQLModel.metadata.create_all(get_engine())
-        logger.info("Database schema initialized successfully")
+        
+        # Add retry logic for database initialization
+        max_retries = 3
+        retry_delay = 2  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                SQLModel.metadata.create_all(get_engine())
+                logger.info("Database schema initialized successfully")
+                return
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    logger.warning(f"Database initialization attempt {attempt+1} failed: {e}. Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    raise
+                    
     except Exception as e:
         logger.error(f"Error initializing database: {e}")
         if settings.ENVIRONMENT != "production":
@@ -70,6 +116,7 @@ def init_db():
             raise
         # In production, we'll continue even if DB init fails
         # This allows the API to start and serve non-DB endpoints
+
 
 def get_session():
     """Get database session"""
