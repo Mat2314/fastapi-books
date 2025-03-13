@@ -77,12 +77,22 @@ def get_engine():
         logger.info(f"Initializing database connection to: {db_url}")
         
         # Create engine with connection pooling and retry logic
+        connect_args = {}
+        
+        # Add appropriate timeout parameter based on the driver
+        if "+pg8000" in db_url:
+            # pg8000 uses timeout in seconds
+            connect_args["timeout"] = 30
+        else:
+            # psycopg2 uses connect_timeout in seconds
+            connect_args["connect_timeout"] = 30
+        
         engine = create_engine(
             db_url, 
             echo=False,
             pool_pre_ping=True,
             pool_recycle=300,  # Recycle connections every 5 minutes
-            connect_args={"timeout": 30}  # 30 second connection timeout
+            connect_args=connect_args
         )
     return engine
 
