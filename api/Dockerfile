@@ -5,6 +5,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements file
@@ -32,13 +33,17 @@ ENV CLOUD_SQL_CONNECTION_NAME="experiments-444412:us-central1:fabooks-db"
 RUN echo '#!/bin/sh\necho "Health check running..."\ncurl -f http://localhost:${PORT} || exit 1' > /app/healthcheck.sh \
     && chmod +x /app/healthcheck.sh
 
-# Create a startup script
-RUN echo '#!/bin/sh\necho "Starting application on port ${PORT}..."\necho "Python version: $(python --version)"\necho "Current directory: $(pwd)"\nls -la\necho "Environment: ${ENVIRONMENT}"\necho "Cloud SQL Connection: ${CLOUD_SQL_CONNECTION_NAME}"\necho "Starting uvicorn..."\nexec uvicorn main:app --host 0.0.0.0 --port ${PORT}' > /app/start.sh \
-    && chmod +x /app/start.sh
+# Create a database check script
+RUN echo '#!/bin/sh\necho "Checking database permissions..."\nPGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "\\dn" || echo "Could not list schemas - may need to check permissions"\nPGPASSWORD=${POSTGRES_PASSWORD} psql -h ${POSTGRES_HOST} -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT current_user, current_database(), session_user, current_schema" || echo "Could not check current user/schema"' > /app/db_check.sh \
+    && chmod +x /app/db_check.sh
 
-# Run migrations
-RUN echo "Running migrations..."
-RUN alembic upgrade head
+# Create a migration script
+RUN echo '#!/bin/sh\necho "Running database migrations..."\nalembic upgrade head || echo "Migration failed but continuing"' > /app/run_migrations.sh \
+    && chmod +x /app/run_migrations.sh
+
+# Create a startup script
+RUN echo '#!/bin/sh\necho "Starting application on port ${PORT}..."\necho "Python version: $(python --version)"\necho "Current directory: $(pwd)"\nls -la\necho "Environment: ${ENVIRONMENT}"\necho "Cloud SQL Connection: ${CLOUD_SQL_CONNECTION_NAME}"\n\n# Check database permissions if host is available\nif [ -n "${POSTGRES_HOST}" ] && [ "${POSTGRES_HOST}" != "localhost" ]; then\n  echo "Checking database permissions..."\n  /app/db_check.sh\n  \n  echo "Running database migrations..."\n  /app/run_migrations.sh\nfi\n\necho "Starting uvicorn..."\nexec uvicorn main:app --host 0.0.0.0 --port ${PORT}' > /app/start.sh \
+    && chmod +x /app/start.sh
 
 # Command to run the application
 CMD ["/app/start.sh"] 
