@@ -36,5 +36,9 @@ RUN echo '#!/bin/sh\necho "Health check running..."\ncurl -f http://localhost:${
 RUN echo '#!/bin/sh\necho "Starting application on port ${PORT}..."\necho "Python version: $(python --version)"\necho "Current directory: $(pwd)"\nls -la\necho "Environment: ${ENVIRONMENT}"\necho "Cloud SQL Connection: ${CLOUD_SQL_CONNECTION_NAME}"\necho "Starting uvicorn..."\nexec uvicorn main:app --host 0.0.0.0 --port ${PORT}' > /app/start.sh \
     && chmod +x /app/start.sh
 
+# Run migrations
+RUN echo "Running migrations..."
+RUN alembic upgrade head
+
 # Command to run the application
 CMD ["/app/start.sh"] 
