@@ -78,7 +78,6 @@ jobs:
             --max-instances=2
             --concurrency=80
             --cpu-throttling
-            --startup-cpu-boost
 
       - name: 'Show output'
         run: |
