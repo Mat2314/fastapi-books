@@ -57,6 +57,14 @@ jobs:
           docker build --tag "${DOCKER_TAG}" -f frontend/Dockerfile frontend/
           docker push "${DOCKER_TAG}"
 
+      - name: 'Get Backend Service URL'
+        id: 'get-backend-url'
+        run: |
+          BACKEND_URL=$(gcloud run services describe fabooks-service --platform managed --region ${{ env.REGION }} --format 'value(status.url)')
+          echo "Backend URL: ${BACKEND_URL}"
+          # Set as output for use in the next step
+          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
       - name: 'Deploy Angular Frontend to Cloud Run'
         id: deploy
         uses: 'google-github-actions/deploy-cloudrun@33553064113a37d688aa6937bacbdc481580be17' # google-github-actions/deploy-cloudrun@v2
@@ -68,7 +76,7 @@ jobs:
             --vpc-connector=fabooks-connector
             --vpc-egress=all-traffic
             --port=8080
-            --set-env-vars=API_URL=https://fabooks-service-254943040140.us-central1.run.app/api/v1
+            --set-env-vars=API_URL=${{ steps.get-backend-url.outputs.backend_url }}/api/v1
             --set-env-vars=ENVIRONMENT=production
             --allow-unauthenticated
             --timeout=10m
