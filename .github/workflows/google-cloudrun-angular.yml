@@ -68,7 +68,7 @@ jobs:
             --vpc-connector=fabooks-connector
             --vpc-egress=all-traffic
             --port=8080
-            --set-env-vars=API_URL=https://fabooks-service-254943040140.us-central1.run.app/
+            --set-env-vars=API_URL=https://fabooks-service-254943040140.us-central1.run.app/api/v1
             --set-env-vars=ENVIRONMENT=production
             --allow-unauthenticated
             --timeout=10m

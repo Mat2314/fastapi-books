@@ -13,7 +13,7 @@ export class ApiService {
     private http: HttpClient,
     private envService: EnvService
   ) {
-    // Get the API URL from the environment variables
+    // Get the API URL directly from the environment variables
     this.apiUrl = this.envService.apiUrl;
   }
 
@@ -25,6 +25,11 @@ export class ApiService {
   // Example method to get a book by ID
   getBook(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/books/${id}`);
+  }
+
+  // Login method
+  login(credentials: {username: string, password: string}): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, credentials);
   }
 
   // Add more API methods as needed
