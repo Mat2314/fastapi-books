@@ -19,5 +19,11 @@ RUN chmod +x env.sh
 # Create env.js file that will be populated at runtime
 RUN echo "window.env = {};" > env.js
 
-# Use shell script as entrypoint
-ENTRYPOINT ["/bin/sh", "-c", "./env.sh && nginx -g 'daemon off;'"] 
+# Create a healthcheck file
+RUN echo "OK" > health.txt
+
+# Test nginx configuration during build
+RUN nginx -t
+
+# Use shell script as entrypoint with explicit logging and error handling
+ENTRYPOINT ["/bin/sh", "-c", "echo 'Starting container on port 8080...' && ./env.sh && echo 'Starting Nginx...' && nginx -t && nginx -g 'daemon off;'"] 

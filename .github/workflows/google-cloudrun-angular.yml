@@ -71,6 +71,14 @@ jobs:
             --set-env-vars=API_URL=https://fabooks-service-254943040140.us-central1.run.app/
             --set-env-vars=ENVIRONMENT=production
             --allow-unauthenticated
+            --timeout=10m
+            --cpu=1
+            --memory=512Mi
+            --min-instances=0
+            --max-instances=2
+            --concurrency=80
+            --cpu-throttling
+            --startup-cpu-boost
 
       - name: 'Show output'
         run: |
