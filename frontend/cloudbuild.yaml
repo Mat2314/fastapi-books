@@ -6,9 +6,9 @@ steps:
     args:
       - '-c'
       - |
-        BACKEND_URL=$(gcloud run services describe fabooks-api --platform managed --region ${_REGION} --format 'value(status.url)')
-        echo "Backend URL: $BACKEND_URL"
-        echo "BACKEND_URL=$BACKEND_URL" > /workspace/backend_url.env
+        BACKEND_URL=$(gcloud run services describe fabooks-service --platform managed --region ${_REGION} --format 'value(status.url)')
+        echo "Backend URL: ${BACKEND_URL}"
+        echo "BACKEND_URL=${BACKEND_URL}" > /workspace/backend_url.env
 
   # Update environment.prod.ts with backend URL
   - name: 'gcr.io/cloud-builders/npm'
@@ -18,7 +18,7 @@ steps:
       - '-c'
       - |
         source /workspace/backend_url.env
-        sed -i "s|https://fabooks-api-PROJECTID.run.app|$BACKEND_URL|g" src/environments/environment.prod.ts
+        sed -i "s|https://fabooks-api-PROJECTID.run.app|${BACKEND_URL}|g" src/environments/environment.prod.ts
         cat src/environments/environment.prod.ts
 
   # Update nginx.conf with backend URL
@@ -29,7 +29,7 @@ steps:
       - '-c'
       - |
         source /workspace/backend_url.env
-        sed -i "s|\${BACKEND_URL}|$BACKEND_URL|g" nginx.conf
+        sed -i "s|\${BACKEND_URL}|${BACKEND_URL}|g" nginx.conf
         cat nginx.conf
 
   # Build the container image
