@@ -1,30 +1,23 @@
-FROM node:22-alpine as build
-
+# Build stage
+FROM node:18 as build
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy the rest of the application code
+RUN npm install
 COPY . .
+RUN npm run build --prod
 
-# Build the application
-RUN npm run build
-
-# Production stage
+# Runtime stage
 FROM nginx:alpine
-
-# Copy the build output to replace the default nginx contents
-COPY --from=build /app/dist/fabooks /usr/share/nginx/html
-
-# Copy custom nginx configuration
+COPY --from=build /app/dist/* /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
-EXPOSE 80
+# Add script to replace environment variables at runtime
+WORKDIR /usr/share/nginx/html
+COPY env.sh .
+RUN chmod +x env.sh
 
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"] 
+# Create env.js file that will be populated at runtime
+RUN echo "window.env = {};" > env.js
+
+# Use shell script as entrypoint
+ENTRYPOINT ["/bin/sh", "-c", "./env.sh && nginx -g 'daemon off;'"] 
