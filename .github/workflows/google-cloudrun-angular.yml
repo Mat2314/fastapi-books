@@ -1,0 +1,77 @@
+name: 'Build and Deploy Angular Frontend to Cloud Run'
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: 'experiments-444412' # Google Cloud project ID
+  REGION: 'us-central1' # Region
+  SERVICE: 'fastapi-books-repository' # Artifact Registry repository name
+  CLOUD_RUN_SERVICE: 'fabooks-frontend' # Service name for Cloud Run deployment
+  WORKLOAD_IDENTITY_PROVIDER: 'projects/254943040140/locations/global/workloadIdentityPools/fabooks-pool/providers/github-provider'
+
+jobs:
+  deploy:
+    runs-on: 'ubuntu-latest'
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
+        with:
+          workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
+          project_id: '${{ env.PROJECT_ID }}'
+          service_account: 'github-actions@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          token_format: 'access_token'
+
+      - name: 'Docker Auth'
+        run: |-
+          # Configure Docker to use gcloud credentials
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          
+      - name: 'Ensure Artifact Registry Repository Exists'
+        run: |-
+          echo "Checking if repository exists: ${{ env.SERVICE }}"
+          if ! gcloud artifacts repositories describe ${{ env.SERVICE }} --location=${{ env.REGION }} --project=${{ env.PROJECT_ID }} > /dev/null 2>&1; then
+            echo "Repository does not exist, creating it..."
+            gcloud artifacts repositories create ${{ env.SERVICE }} --repository-format=docker --location=${{ env.REGION }} --project=${{ env.PROJECT_ID }}
+          else
+            echo "Repository exists, continuing..."
+          fi
+
+      - name: 'Build and Push Container'
+        run: |-
+          echo "Building and pushing to: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/frontend:${{ github.sha }}"
+          # Format the Docker tag correctly with all required components
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/frontend:${{ github.sha }}"
+          echo "Using Docker tag: ${DOCKER_TAG}"
+          docker build --tag "${DOCKER_TAG}" -f frontend/Dockerfile frontend/
+          docker push "${DOCKER_TAG}"
+
+      - name: 'Deploy Angular Frontend to Cloud Run'
+        id: deploy
+        uses: 'google-github-actions/deploy-cloudrun@33553064113a37d688aa6937bacbdc481580be17' # google-github-actions/deploy-cloudrun@v2
+        with:
+          service: '${{ env.CLOUD_RUN_SERVICE }}'
+          region: '${{ env.REGION }}'
+          image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/frontend:${{ github.sha }}'
+          flags: |
+            --vpc-connector=fabooks-connector
+            --vpc-egress=all-traffic
+            --port=8080
+            --set-env-vars=API_URL=https://fabooks-service-254943040140.us-central1.run.app/
+            --set-env-vars=ENVIRONMENT=production
+            --allow-unauthenticated
+
+      - name: 'Show output'
+        run: |
+          echo ${{ steps.deploy.outputs.url }} 
