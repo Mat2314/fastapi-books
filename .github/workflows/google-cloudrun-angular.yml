@@ -48,6 +48,24 @@ jobs:
             echo "Repository exists, continuing..."
           fi
 
+      - name: 'Get Backend Service URL'
+        id: 'get-backend-url'
+        run: |
+          # Get the backend service URL
+          BACKEND_URL=$(gcloud run services describe fabooks-service --platform managed --region ${{ env.REGION }} --format 'value(status.url)')
+          
+          # Ensure URL has no trailing slash
+          BACKEND_URL=$(echo $BACKEND_URL | sed 's/\/$//')
+          
+          # Add the API path
+          API_URL="${BACKEND_URL}/api/v1"
+          
+          echo "Backend URL: ${BACKEND_URL}"
+          echo "API URL: ${API_URL}"
+          
+          # Set as output for use in the next step
+          echo "api_url=${API_URL}" >> $GITHUB_OUTPUT
+
       - name: 'Build and Push Container'
         run: |-
           echo "Building and pushing to: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/frontend:${{ github.sha }}"
@@ -56,14 +74,6 @@ jobs:
           echo "Using Docker tag: ${DOCKER_TAG}"
           docker build --tag "${DOCKER_TAG}" -f frontend/Dockerfile frontend/
           docker push "${DOCKER_TAG}"
-
-      - name: 'Get Backend Service URL'
-        id: 'get-backend-url'
-        run: |
-          BACKEND_URL=$(gcloud run services describe fabooks-service --platform managed --region ${{ env.REGION }} --format 'value(status.url)')
-          echo "Backend URL: ${BACKEND_URL}"
-          # Set as output for use in the next step
-          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
 
       - name: 'Deploy Angular Frontend to Cloud Run'
         id: deploy
@@ -76,7 +86,7 @@ jobs:
             --vpc-connector=fabooks-connector
             --vpc-egress=all-traffic
             --port=8080
-            --set-env-vars=API_URL=${{ steps.get-backend-url.outputs.backend_url }}/api/v1
+            --set-env-vars=API_URL=${{ steps.get-backend-url.outputs.api_url }}
             --set-env-vars=ENVIRONMENT=production
             --allow-unauthenticated
             --timeout=10m
@@ -89,4 +99,5 @@ jobs:
 
       - name: 'Show output'
         run: |
-          echo ${{ steps.deploy.outputs.url }} 
+          echo "Frontend deployed to: ${{ steps.deploy.outputs.url }}"
+          echo "API configured to use: ${{ steps.get-backend-url.outputs.api_url }}" 
