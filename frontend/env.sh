@@ -14,4 +14,7 @@ echo "  ENVIRONMENT: \"${ENVIRONMENT:-development}\"," >> env.js
 echo "};" >> env.js
 
 echo "Environment variables injected into env.js:"
-cat env.js 
+cat env.js
+echo ""
+echo "Current API_URL value: ${API_URL:-http://localhost:8000}"
+echo "Current ENVIRONMENT value: ${ENVIRONMENT:-development}" 

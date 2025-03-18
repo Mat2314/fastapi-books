@@ -1,20 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { EnvService } from './env.service';
+import { ConfigService } from './config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl: string;
-
   constructor(
     private http: HttpClient,
-    private envService: EnvService
-  ) {
-    // Get the API URL directly from the environment variables
-    this.apiUrl = this.envService.apiUrl;
+    private configService: ConfigService
+  ) {}
+
+  // Getter for the API URL to ensure it's always up to date
+  private get apiUrl(): string {
+    return this.configService.apiUrl;
   }
 
   // Example method to get books
