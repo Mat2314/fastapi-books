@@ -5,8 +5,8 @@ from enum import Enum
 
 
 class AccountType(str, Enum):
-    AUTHOR = "author"
-    READER = "reader"
+    AUTHOR = "AUTHOR"
+    READER = "READER"
 
 
 class Users(SQLModel, table=True):
