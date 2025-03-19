@@ -47,7 +47,7 @@ origins = [
     "http://127.0.0.1:4200",
     # Add your Cloud Run URLs here
     "https://fabooks-service-254943040140.us-central1.run.app",
-    "https://fabooks-frontend-254943040140.us-central1.run.app",  # Frontend Cloud Run URL
+    "https://fabooks-frontend-254943040140.us-central1.run.app",
 ]
 
 app.add_middleware(
