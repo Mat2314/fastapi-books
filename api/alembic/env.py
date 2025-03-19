@@ -2,6 +2,7 @@ from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from sqlalchemy import text
 
 from db.database import get_database_url
 from db.models import Users, Books
@@ -73,16 +74,17 @@ def run_migrations_online() -> None:
         # Create it directly with SQL before starting migrations
         try:
             print("Checking if accounttype enum exists...")
-            exists_query = """
+            exists_query = text("""
             SELECT EXISTS (
                 SELECT 1 FROM pg_type WHERE typname = 'accounttype'
             );
-            """
+            """)
             exists = connection.execute(exists_query).scalar()
             
             if not exists:
                 print("Creating accounttype enum directly with SQL")
-                connection.execute("CREATE TYPE accounttype AS ENUM ('AUTHOR', 'READER');")
+                create_enum_sql = text("CREATE TYPE accounttype AS ENUM ('AUTHOR', 'READER');")
+                connection.execute(create_enum_sql)
             else:
                 print("Accounttype enum already exists, skipping creation")
                 

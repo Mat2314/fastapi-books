@@ -8,6 +8,7 @@ Create Date: 2025-03-04 18:32:29.014177
 from typing import Sequence, Union
 
 import sqlalchemy as sa
+from sqlalchemy import text
 import sqlmodel
 from alembic import op
 import time
@@ -34,12 +35,13 @@ def upgrade() -> None:
     conn = op.get_bind()
     
     # Check if users table already exists
-    has_users = conn.execute("""
+    users_query = text("""
     SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_name = 'users'
     );
-    """).scalar()
+    """)
+    has_users = conn.execute(users_query).scalar()
     
     # Create tables only if they don't exist
     if not has_users:
@@ -67,10 +69,11 @@ def upgrade() -> None:
                 sqlmodel.sql.sqltypes.AutoString(), 
                 nullable=False
             ),
-            # Explicitly use existing enum type without attempting to create it
+            # Explicitly use existing enum type without creating it
             sa.Column(
                 'account_type', 
-                sa.Enum('AUTHOR', 'READER', name='accounttype', create_type=False), 
+                sa.Enum('AUTHOR', 'READER', name='accounttype', 
+                       create_type=False), 
                 nullable=False
             ),
             sa.PrimaryKeyConstraint('id')
@@ -80,12 +83,13 @@ def upgrade() -> None:
         print("Users table already exists, skipping creation")
     
     # Check if books table already exists
-    has_books = conn.execute("""
+    books_query = text("""
     SELECT EXISTS (
         SELECT FROM information_schema.tables 
         WHERE table_name = 'books'
     );
-    """).scalar()
+    """)
+    has_books = conn.execute(books_query).scalar()
     
     if not has_books:
         print("Creating books table...")
