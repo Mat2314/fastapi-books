@@ -54,17 +54,22 @@ jobs:
       - name: 'Get Backend Service URL'
         id: 'get-backend-url'
         run: |
-          # Get the backend service URL
-          BACKEND_URL=$(gcloud run services describe fabooks-service --platform managed --region ${{ env.REGION }} --format 'value(status.url)')
+          # Get the backend service name for internal URL format
+          BACKEND_SERVICE_NAME="fabooks-service"
           
-          # Ensure URL has no trailing slash
-          BACKEND_URL=$(echo $BACKEND_URL | sed 's/\/$//')
+          # Use internal URL format for accessing within the VPC
+          # For internal Cloud Run services, use this format:
+          # Format: https://SERVICE-NAME.a.run.app or the VPC Service Controls perimeter name
+          # Actually, since we're moving to VPC, we need to use the internal hostname pattern
+          # which follows: https://SERVICE_NAME.REGION.run.internal
+          # (no project number needed for the internal DNS)
+          INTERNAL_URL="https://${BACKEND_SERVICE_NAME}.${REGION}.run.internal"
           
           # Add the API path
-          API_URL="${BACKEND_URL}/api/v1"
+          API_URL="${INTERNAL_URL}/api/v1"
           
-          echo "Backend URL: ${BACKEND_URL}"
-          echo "API URL: ${API_URL}"
+          echo "Using internal backend URL: ${INTERNAL_URL}"
+          echo "Internal API URL: ${API_URL}"
           
           # Set as output for use in the next step
           echo "api_url=${API_URL}" >> $GITHUB_OUTPUT

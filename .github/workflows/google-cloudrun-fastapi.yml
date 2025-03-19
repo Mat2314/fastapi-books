@@ -116,7 +116,7 @@ jobs:
             --set-env-vars=POSTGRES_HOST=172.27.0.3
             --set-env-vars=POSTGRES_PORT=5432
             --set-env-vars=ENVIRONMENT=production
-            --allow-unauthenticated
+            --ingress=internal
       # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
         run: |2-
