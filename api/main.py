@@ -20,7 +20,8 @@ async def lifespan(app: FastAPI):
     Handles database initialization and cleanup.
     """
     try:
-        logger.info(f"Starting application in {os.getenv('ENVIRONMENT', 'development')} mode")
+        env = os.getenv('ENVIRONMENT', 'development')
+        logger.info(f"Starting application in {env} mode")
         # Initialize database
         init_db()
     except Exception as e:
@@ -45,10 +46,18 @@ app = FastAPI(
 origins = [
     "http://localhost:4200",  # Angular app
     "http://127.0.0.1:4200",
-    # Add your Cloud Run URLs here
+    # Public Cloud Run URLs
     "https://fabooks-service-254943040140.us-central1.run.app",
-    "https://fabooks-frontend-254943040140.us-central1.run.app",  # Frontend Cloud Run URL
+    "https://fabooks-frontend-254943040140.us-central1.run.app",
+    # For internal VPC access
+    "https://fabooks-service.us-central1.run.internal",
 ]
+
+# Add frontend URL from environment if specified
+frontend_url = os.getenv("ALLOWED_FRONTEND_URL")
+if frontend_url and frontend_url not in origins:
+    origins.append(frontend_url)
+    logger.info(f"Added frontend URL to CORS origins: {frontend_url}")
 
 app.add_middleware(
     CORSMiddleware,
