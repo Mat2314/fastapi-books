@@ -38,7 +38,7 @@ RUN echo '#!/bin/sh\necho "Checking database permissions..."\nPGPASSWORD=${POSTG
     && chmod +x /app/db_check.sh
 
 # Create a migration script
-RUN echo '#!/bin/sh\necho "Running database migrations..."\nalembic upgrade head || echo "Migration failed but continuing"' > /app/run_migrations.sh \
+RUN echo '#!/bin/sh\necho "Running database migrations..."\ncd /app && alembic upgrade head || echo "Migration failed but continuing"' > /app/run_migrations.sh \
     && chmod +x /app/run_migrations.sh
 
 # Create a startup script
