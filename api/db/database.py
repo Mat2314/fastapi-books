@@ -100,7 +100,14 @@ def get_engine():
 def init_db():
     """Initialize database schema"""
     try:
-        logger.info("Initializing database schema")
+        # In production, don't auto-create schema - rely on migrations only
+        if settings.ENVIRONMENT == "production":
+            logger.info("Running in production mode - skipping automatic schema creation")
+            logger.info("Database schema should be managed by Alembic migrations only")
+            return
+            
+        # Only run automatic schema creation in development/testing
+        logger.info("Initializing database schema in development mode")
         
         # Add retry logic for database initialization
         max_retries = 3
@@ -112,6 +119,11 @@ def init_db():
                 logger.info("Database schema initialized successfully")
                 return
             except Exception as e:
+                # Check if it's a "DuplicateObject" error, which is okay to ignore
+                if "DuplicateObject" in str(e) and "already exists" in str(e):
+                    logger.info(f"Ignoring duplicate object error: {e}")
+                    return
+                    
                 if attempt < max_retries - 1:
                     logger.warning(f"Database initialization attempt {attempt+1} failed: {e}. Retrying in {retry_delay} seconds...")
                     time.sleep(retry_delay)
