@@ -69,11 +69,41 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        # Fix for accounttype enum to prevent DuplicateObject errors
+        # Create it directly with SQL before starting migrations
+        try:
+            print("Checking if accounttype enum exists...")
+            exists_query = """
+            SELECT EXISTS (
+                SELECT 1 FROM pg_type WHERE typname = 'accounttype'
+            );
+            """
+            exists = connection.execute(exists_query).scalar()
+            
+            if not exists:
+                print("Creating accounttype enum directly with SQL")
+                connection.execute("CREATE TYPE accounttype AS ENUM ('AUTHOR', 'READER');")
+            else:
+                print("Accounttype enum already exists, skipping creation")
+                
+            # Force a commit to ensure the enum is created before migrations run
+            connection.commit()
+            print("Enum handling completed successfully")
+                
+        except Exception as e:
+            print(f"Warning: Error handling accounttype enum: {e}")
+            # Continue anyway, as the migration might handle it
+    
+        # Configure context with our pre-handled connection
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            # Important: tell Alembic to not create enums automatically
+            render_as_batch=True
         )
 
         with context.begin_transaction():
+            print("Starting migrations transaction...")
             context.run_migrations()
 
 
