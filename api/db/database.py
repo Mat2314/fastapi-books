@@ -99,45 +99,34 @@ def get_engine():
 
 def init_db():
     """Initialize database schema"""
-    try:
-        # In production, don't auto-create schema - rely on migrations only
-        if settings.ENVIRONMENT == "production":
-            logger.info("Running in production mode - skipping automatic schema creation")
-            logger.info("Database schema should be managed by Alembic migrations only")
-            return
+    # In production, don't do anything - rely on migrations only
+    if settings.ENVIRONMENT == "production":
+        logger.info("Running in production mode - skipping automatic schema creation")
+        logger.info("Database schema is managed by Alembic migrations only")
+        return
             
-        # Only run automatic schema creation in development/testing
-        logger.info("Initializing database schema in development mode")
-        
-        # Add retry logic for database initialization
-        max_retries = 3
-        retry_delay = 2  # seconds
-        
-        for attempt in range(max_retries):
-            try:
-                SQLModel.metadata.create_all(get_engine())
-                logger.info("Database schema initialized successfully")
-                return
-            except Exception as e:
-                # Check if it's a "DuplicateObject" error, which is okay to ignore
-                if "DuplicateObject" in str(e) and "already exists" in str(e):
-                    logger.info(f"Ignoring duplicate object error: {e}")
-                    return
-                    
-                if attempt < max_retries - 1:
-                    logger.warning(f"Database initialization attempt {attempt+1} failed: {e}. Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                    retry_delay *= 2  # Exponential backoff
-                else:
+    # Only run automatic schema creation in development/testing
+    logger.info("Initializing database schema in development mode")
+    
+    # Add retry logic for database initialization
+    max_retries = 3
+    retry_delay = 2  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            SQLModel.metadata.create_all(get_engine())
+            logger.info("Database schema initialized successfully")
+            return
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Database initialization attempt {attempt+1} failed: {e}. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                logger.error(f"Failed to initialize database after {max_retries} attempts: {e}")
+                if settings.ENVIRONMENT != "production":
+                    # In development, we want to fail if DB init fails
                     raise
-                    
-    except Exception as e:
-        logger.error(f"Error initializing database: {e}")
-        if settings.ENVIRONMENT != "production":
-            # In development, we want to fail if DB init fails
-            raise
-        # In production, we'll continue even if DB init fails
-        # This allows the API to start and serve non-DB endpoints
 
 
 def get_session():
