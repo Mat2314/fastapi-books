@@ -20,9 +20,16 @@ async def lifespan(app: FastAPI):
     Handles database initialization and cleanup.
     """
     try:
-        logger.info(f"Starting application in {os.getenv('ENVIRONMENT', 'development')} mode")
-        # Initialize database
+        env_mode = os.getenv('ENVIRONMENT', 'development')
+        logger.info(f"Starting application in {env_mode} mode")
+        
+        # Initialize database - in production this won't auto-create schema
+        # but will still check the connection
         init_db()
+        
+        if env_mode == 'production':
+            logger.info("In production mode - database schema should be managed by migrations")
+        
     except Exception as e:
         logger.error(f"Error during startup: {e}")
         # In production, we'll continue even if there's an error
